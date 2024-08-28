@@ -11,17 +11,31 @@ const countries = [
   { code: 'FR', name: 'France' },
   { code: 'JP', name: 'Japan' },
   { code: 'RU', name: 'Russia' },
+  { code: 'CN', name: 'China' },
+  { code: 'IN', name: 'India' },
+  { code: 'BR', name: 'Brazil' },
+  { code: 'IT', name: 'Italy' },
+  { code: 'ES', name: 'Spain' },
+  { code: 'NL', name: 'Netherlands' },
+  { code: 'SE', name: 'Sweden' },
 ];
 
 const cities = {
-  US: ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix'],
-  GB: ['London', 'Manchester', 'Birmingham', 'Glasgow', 'Liverpool'],
-  CA: ['Toronto', 'Vancouver', 'Montreal', 'Calgary', 'Ottawa'],
-  AU: ['Sydney', 'Melbourne', 'Brisbane', 'Perth', 'Adelaide'],
-  DE: ['Berlin', 'Hamburg', 'Munich', 'Cologne', 'Frankfurt'],
-  FR: ['Paris', 'Marseille', 'Lyon', 'Toulouse', 'Nice'],
-  JP: ['Tokyo', 'Osaka', 'Nagoya', 'Sapporo', 'Fukuoka'],
-  RU: ['Moscow', 'Saint Petersburg', 'Novosibirsk', 'Yekaterinburg', 'Kazan'],
+  US: ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix', 'Philadelphia', 'San Antonio', 'San Diego', 'Dallas', 'San Jose'],
+  GB: ['London', 'Birmingham', 'Manchester', 'Glasgow', 'Liverpool', 'Leeds', 'Sheffield', 'Edinburgh', 'Bristol', 'Leicester'],
+  CA: ['Toronto', 'Montreal', 'Vancouver', 'Calgary', 'Edmonton', 'Ottawa', 'Winnipeg', 'Quebec City', 'Hamilton', 'Kitchener'],
+  AU: ['Sydney', 'Melbourne', 'Brisbane', 'Perth', 'Adelaide', 'Gold Coast', 'Newcastle', 'Canberra', 'Wollongong', 'Logan City'],
+  DE: ['Berlin', 'Hamburg', 'Munich', 'Cologne', 'Frankfurt', 'Stuttgart', 'Düsseldorf', 'Dortmund', 'Essen', 'Leipzig'],
+  FR: ['Paris', 'Marseille', 'Lyon', 'Toulouse', 'Nice', 'Nantes', 'Strasbourg', 'Montpellier', 'Bordeaux', 'Lille'],
+  JP: ['Tokyo', 'Yokohama', 'Osaka', 'Nagoya', 'Sapporo', 'Fukuoka', 'Kobe', 'Kyoto', 'Kawasaki', 'Saitama'],
+  RU: ['Moscow', 'Saint Petersburg', 'Novosibirsk', 'Yekaterinburg', 'Nizhny Novgorod', 'Kazan', 'Chelyabinsk', 'Omsk', 'Samara', 'Rostov-on-Don'],
+  CN: ['Shanghai', 'Beijing', 'Guangzhou', 'Shenzhen', 'Chengdu', 'Nanjing', 'Wuhan', 'Xi'an', 'Hangzhou', 'Chongqing'],
+  IN: ['Mumbai', 'Delhi', 'Bangalore', 'Hyderabad', 'Ahmedabad', 'Chennai', 'Kolkata', 'Surat', 'Pune', 'Jaipur'],
+  BR: ['São Paulo', 'Rio de Janeiro', 'Salvador', 'Brasília', 'Fortaleza', 'Belo Horizonte', 'Manaus', 'Curitiba', 'Recife', 'Porto Alegre'],
+  IT: ['Rome', 'Milan', 'Naples', 'Turin', 'Palermo', 'Genoa', 'Bologna', 'Florence', 'Bari', 'Catania'],
+  ES: ['Madrid', 'Barcelona', 'Valencia', 'Seville', 'Zaragoza', 'Málaga', 'Murcia', 'Palma', 'Las Palmas', 'Bilbao'],
+  NL: ['Amsterdam', 'Rotterdam', 'The Hague', 'Utrecht', 'Eindhoven', 'Tilburg', 'Groningen', 'Almere', 'Breda', 'Nijmegen'],
+  SE: ['Stockholm', 'Gothenburg', 'Malmö', 'Uppsala', 'Västerås', 'Örebro', 'Linköping', 'Helsingborg', 'Jönköping', 'Norrköping'],
 };
 
 const translations = {
@@ -140,24 +154,24 @@ const WeatherTimeWidget = () => {
   const t = (key) => translations[settings.language][key];
 
   return (
-    <div className={`relative overflow-hidden p-8 rounded-3xl shadow-lg text-white flex flex-col items-center justify-between transition-all duration-1000 ease-in-out w-full h-screen ${getBackgroundClass()}`}>
+    <div className={`relative overflow-hidden p-4 sm:p-8 rounded-3xl shadow-lg text-white flex flex-col items-center justify-between transition-all duration-1000 ease-in-out w-full h-screen ${getBackgroundClass()}`}>
       <button 
         onClick={() => setIsMenuOpen(!isMenuOpen)}
-        className="absolute top-4 left-4 z-20 bg-white bg-opacity-20 p-2 rounded-full"
+        className="absolute top-4 left-4 z-20 bg-white bg-opacity-20 p-2 rounded-full hover:bg-opacity-30 transition-all duration-300"
       >
         {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
 
       {isMenuOpen && (
-        <div className="absolute inset-0 bg-black bg-opacity-50 z-10 flex items-center justify-center">
-          <div className="bg-white text-black p-6 rounded-lg w-80 max-h-[80vh] overflow-y-auto">
-            <h2 className="text-2xl mb-4 font-bold">{t('settings')}</h2>
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-30 flex items-center justify-center">
+          <div className="bg-white text-black p-6 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <h2 className="text-2xl mb-4 font-bold text-center">{t('settings')}</h2>
             <div className="mb-4">
               <label className="block mb-2 font-semibold">{t('language')}</label>
               <select 
                 value={settings.language} 
                 onChange={(e) => handleSettingChange('language', e.target.value)}
-                className="w-full p-2 border rounded bg-gray-100"
+                className="w-full p-2 border rounded bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="en">English</option>
                 <option value="ru">Русский</option>
@@ -169,7 +183,7 @@ const WeatherTimeWidget = () => {
               <select 
                 value={settings.country} 
                 onChange={(e) => handleSettingChange('country', e.target.value)}
-                className="w-full p-2 border rounded bg-gray-100"
+                className="w-full p-2 border rounded bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">{t('autoLocation')}</option>
                 {countries.map((country) => (
@@ -182,7 +196,7 @@ const WeatherTimeWidget = () => {
               <select 
                 value={settings.city} 
                 onChange={(e) => handleSettingChange('city', e.target.value)}
-                className="w-full p-2 border rounded bg-gray-100"
+                className="w-full p-2 border rounded bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 disabled={!settings.country}
               >
                 <option value="">{t('autoLocation')}</option>
@@ -193,7 +207,7 @@ const WeatherTimeWidget = () => {
             </div>
             <button 
               onClick={() => setIsMenuOpen(false)}
-              className="w-full bg-blue-500 text-white p-2 rounded font-semibold hover:bg-blue-600 transition-colors"
+              className="w-full bg-blue-500 text-white p-2 rounded font-semibold hover:bg-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-700"
             >
               {t('close')}
             </button>
@@ -201,22 +215,22 @@ const WeatherTimeWidget = () => {
         </div>
       )}
 
-      <div className="w-full z-10">
-        <div className="text-6xl font-light mb-4 animate-fade-in">
+      <div className="w-full z-10 text-center">
+        <div className="text-4xl sm:text-6xl font-light mb-4 animate-fade-in">
           {time.getHours().toString().padStart(2, '0')}:{time.getMinutes().toString().padStart(2, '0')}
         </div>
       </div>
       <div className="flex flex-col items-center z-10">
         <WeatherIcon />
-        <div className="text-3xl capitalize font-light mt-4 animate-fade-in">
+        <div className="text-2xl sm:text-3xl capitalize font-light mt-4 animate-fade-in text-center">
           {weather.condition}
         </div>
         <div className="flex items-center mt-2 animate-fade-in">
           <Thermometer className="text-white mr-2" size={24} />
-          <span className="text-4xl font-light">{weather.temp}°C</span>
+          <span className="text-3xl sm:text-4xl font-light">{weather.temp}°C</span>
         </div>
-        <div className="mt-4 flex items-center">
-          <Globe size={20} className="mr-2" />
+        <div className="mt-4 flex items-center text-sm sm:text-base">
+          <MapPin size={20} className="mr-2" />
           <span>{settings.city || settings.country || t('autoLocation')}</span>
         </div>
       </div>
