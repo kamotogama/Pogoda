@@ -2,9 +2,58 @@ import React, { useState, useEffect } from 'react';
 import { Sun, Cloud, CloudRain, CloudSnow, CloudLightning, Moon, Thermometer, Menu, X, Globe, MapPin } from 'lucide-react';
 import WebApp from '@twa-dev/sdk';
 
+const countries = [
+  { code: 'US', name: 'United States' },
+  { code: 'GB', name: 'United Kingdom' },
+  { code: 'CA', name: 'Canada' },
+  { code: 'AU', name: 'Australia' },
+  { code: 'DE', name: 'Germany' },
+  { code: 'FR', name: 'France' },
+  { code: 'JP', name: 'Japan' },
+  { code: 'RU', name: 'Russia' },
+];
+
+const cities = {
+  US: ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix'],
+  GB: ['London', 'Manchester', 'Birmingham', 'Glasgow', 'Liverpool'],
+  CA: ['Toronto', 'Vancouver', 'Montreal', 'Calgary', 'Ottawa'],
+  AU: ['Sydney', 'Melbourne', 'Brisbane', 'Perth', 'Adelaide'],
+  DE: ['Berlin', 'Hamburg', 'Munich', 'Cologne', 'Frankfurt'],
+  FR: ['Paris', 'Marseille', 'Lyon', 'Toulouse', 'Nice'],
+  JP: ['Tokyo', 'Osaka', 'Nagoya', 'Sapporo', 'Fukuoka'],
+  RU: ['Moscow', 'Saint Petersburg', 'Novosibirsk', 'Yekaterinburg', 'Kazan'],
+};
+
+const translations = {
+  en: {
+    settings: 'Settings',
+    language: 'Language',
+    country: 'Country',
+    city: 'City',
+    close: 'Close',
+    autoLocation: 'Auto Location',
+  },
+  ru: {
+    settings: 'Настройки',
+    language: 'Язык',
+    country: 'Страна',
+    city: 'Город',
+    close: 'Закрыть',
+    autoLocation: 'Автоопределение',
+  },
+  es: {
+    settings: 'Ajustes',
+    language: 'Idioma',
+    country: 'País',
+    city: 'Ciudad',
+    close: 'Cerrar',
+    autoLocation: 'Ubicación automática',
+  },
+};
+
 const WeatherTimeWidget = () => {
   const [time, setTime] = useState(new Date());
-  const [weather, setWeather] = useState({ type: 'sunny', temp: 13 });
+  const [weather, setWeather] = useState({ type: 'sunny', temp: 13, condition: '' });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [settings, setSettings] = useState(() => {
     const savedSettings = localStorage.getItem('weatherSettings');
@@ -83,27 +132,32 @@ const WeatherTimeWidget = () => {
 
   const handleSettingChange = (setting, value) => {
     setSettings(prev => ({ ...prev, [setting]: value }));
+    if (setting === 'country') {
+      setSettings(prev => ({ ...prev, city: '' }));
+    }
   };
+
+  const t = (key) => translations[settings.language][key];
 
   return (
     <div className={`relative overflow-hidden p-8 rounded-3xl shadow-lg text-white flex flex-col items-center justify-between transition-all duration-1000 ease-in-out w-full h-screen ${getBackgroundClass()}`}>
       <button 
         onClick={() => setIsMenuOpen(!isMenuOpen)}
-        className="absolute top-4 left-4 z-20"
+        className="absolute top-4 left-4 z-20 bg-white bg-opacity-20 p-2 rounded-full"
       >
         {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
 
       {isMenuOpen && (
         <div className="absolute inset-0 bg-black bg-opacity-50 z-10 flex items-center justify-center">
-          <div className="bg-white text-black p-6 rounded-lg w-80">
-            <h2 className="text-2xl mb-4">Settings</h2>
+          <div className="bg-white text-black p-6 rounded-lg w-80 max-h-[80vh] overflow-y-auto">
+            <h2 className="text-2xl mb-4 font-bold">{t('settings')}</h2>
             <div className="mb-4">
-              <label className="block mb-2">Language</label>
+              <label className="block mb-2 font-semibold">{t('language')}</label>
               <select 
                 value={settings.language} 
                 onChange={(e) => handleSettingChange('language', e.target.value)}
-                className="w-full p-2 border rounded"
+                className="w-full p-2 border rounded bg-gray-100"
               >
                 <option value="en">English</option>
                 <option value="ru">Русский</option>
@@ -111,30 +165,37 @@ const WeatherTimeWidget = () => {
               </select>
             </div>
             <div className="mb-4">
-              <label className="block mb-2">Country</label>
-              <input 
-                type="text" 
+              <label className="block mb-2 font-semibold">{t('country')}</label>
+              <select 
                 value={settings.country} 
                 onChange={(e) => handleSettingChange('country', e.target.value)}
-                placeholder="Enter country"
-                className="w-full p-2 border rounded"
-              />
+                className="w-full p-2 border rounded bg-gray-100"
+              >
+                <option value="">{t('autoLocation')}</option>
+                {countries.map((country) => (
+                  <option key={country.code} value={country.code}>{country.name}</option>
+                ))}
+              </select>
             </div>
             <div className="mb-4">
-              <label className="block mb-2">City</label>
-              <input 
-                type="text" 
+              <label className="block mb-2 font-semibold">{t('city')}</label>
+              <select 
                 value={settings.city} 
                 onChange={(e) => handleSettingChange('city', e.target.value)}
-                placeholder="Enter city"
-                className="w-full p-2 border rounded"
-              />
+                className="w-full p-2 border rounded bg-gray-100"
+                disabled={!settings.country}
+              >
+                <option value="">{t('autoLocation')}</option>
+                {settings.country && cities[settings.country].map((city) => (
+                  <option key={city} value={city}>{city}</option>
+                ))}
+              </select>
             </div>
             <button 
               onClick={() => setIsMenuOpen(false)}
-              className="w-full bg-blue-500 text-white p-2 rounded"
+              className="w-full bg-blue-500 text-white p-2 rounded font-semibold hover:bg-blue-600 transition-colors"
             >
-              Close
+              {t('close')}
             </button>
           </div>
         </div>
@@ -156,7 +217,7 @@ const WeatherTimeWidget = () => {
         </div>
         <div className="mt-4 flex items-center">
           <Globe size={20} className="mr-2" />
-          <span>{settings.city || settings.country || 'Auto Location'}</span>
+          <span>{settings.city || settings.country || t('autoLocation')}</span>
         </div>
       </div>
     </div>
