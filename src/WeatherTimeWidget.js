@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Sun, Cloud, CloudRain, CloudSnow, CloudLightning, Moon, Thermometer, Menu, X, MapPin } from 'lucide-react';
 
 
-
 const countries = [
   { code: 'US', name: 'United States' },
   { code: 'GB', name: 'United Kingdom' },
@@ -122,7 +121,6 @@ const WeatherTimeWidget = () => {
   useEffect(() => {
     if (window.Telegram && window.Telegram.WebApp) {
       window.Telegram.WebApp.ready();
-      // Подстройка под тему Telegram
       const isDarkMode = window.Telegram.WebApp.colorScheme === 'dark';
       document.body.classList.toggle('dark', isDarkMode);
     }
@@ -134,6 +132,8 @@ const WeatherTimeWidget = () => {
     localStorage.setItem('weatherSettings', JSON.stringify(settings));
     fetchWeather();
   }, [settings]);
+
+
 
   const fetchWeather = async () => {
     try {
@@ -166,7 +166,7 @@ const WeatherTimeWidget = () => {
   };
 
   const WeatherIcon = () => {
-    const iconProps = { size: '10vmin', className: "text-white" };
+    const iconProps = { size: '15vmin', className: "text-white animate-pulse" };
     switch(weather.type) {
       case 'sunny': return <Sun {...iconProps} />;
       case 'cloudy': return <Cloud {...iconProps} />;
@@ -177,6 +177,7 @@ const WeatherTimeWidget = () => {
       default: return null;
     }
   };
+
 
   const getBackgroundClass = () => {
     switch(weather.type) {
@@ -198,20 +199,20 @@ const WeatherTimeWidget = () => {
   };
 
   const t = (key) => translations[settings.language][key];
-
   return (
     <div className={`relative overflow-hidden shadow-lg text-white flex flex-col items-center justify-between transition-all duration-1000 ease-in-out w-full h-full ${getBackgroundClass()}`}>
       <button 
         onClick={() => setIsMenuOpen(!isMenuOpen)}
-        className="absolute top-2 left-2 z-20 bg-white bg-opacity-20 p-2 rounded-full hover:bg-opacity-30 transition-all duration-300"
+        className="absolute top-4 left-4 z-20 bg-white bg-opacity-20 p-2 rounded-full hover:bg-opacity-30 transition-all duration-300"
       >
         {isMenuOpen ? <X size="6vmin" /> : <Menu size="6vmin" />}
       </button>
 
       {isMenuOpen && (
-        <div className="absolute inset-0 bg-black bg-opacity-50 z-30 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-800 text-black dark:text-white p-4 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <div className="absolute inset-0 bg-black bg-opacity-50 z-30 flex items-center justify-center p-4 animate-fadeIn">
+          <div className="bg-white dark:bg-gray-800 text-black dark:text-white p-4 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto animate-slideIn">
             <h2 className="text-xl sm:text-2xl mb-4 font-bold text-center">{t('settings')}</h2>
+
             <div className="mb-4">
               <label className="block mb-2 font-semibold">{t('language')}</label>
               <select 
@@ -266,22 +267,24 @@ const WeatherTimeWidget = () => {
         </div>
       )}
 
-      <div className="w-full z-10 text-center mt-[5vh]">
-        <div className="text-[8vmin] font-light mb-[2vh]">
+      <div className="w-full z-10 text-center mt-[5vh] animate-fadeIn">
+        <div className="text-[10vmin] font-light mb-[2vh] animate-pulse">
           {time.getHours().toString().padStart(2, '0')}:{time.getMinutes().toString().padStart(2, '0')}
         </div>
       </div>
-      <div className="flex flex-col items-center z-10 mb-[5vh]">
-        <WeatherIcon />
-        <div className="text-[4vmin] capitalize font-light mt-[2vh] text-center">
+      <div className="flex flex-col items-center z-10 mb-[5vh] animate-fadeIn">
+        <div className="animate-float">
+          <WeatherIcon />
+        </div>
+        <div className="text-[5vmin] capitalize font-light mt-[3vh] text-center animate-fadeInUp">
           {weather.condition}
         </div>
-        <div className="flex items-center mt-[1vh]">
-          <Thermometer className="text-white mr-2" size="6vmin" />
-          <span className="text-[6vmin] font-light">{weather.temp}°C</span>
+        <div className="flex items-center mt-[2vh] animate-fadeInUp delay-100">
+          <Thermometer className="text-white mr-2" size="7vmin" />
+          <span className="text-[7vmin] font-light">{weather.temp}°C</span>
         </div>
-        <div className="mt-[2vh] flex items-center text-[3vmin]">
-          <MapPin size="4vmin" className="mr-2" />
+        <div className="mt-[3vh] flex items-center text-[3.5vmin] animate-fadeInUp delay-200">
+          <MapPin size="5vmin" className="mr-2" />
           <span>{settings.city || settings.country || t('autoLocation')}</span>
         </div>
       </div>
