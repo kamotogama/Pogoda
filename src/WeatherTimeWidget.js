@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Sun, Cloud, CloudRain, CloudSnow, CloudLightning, Moon, Thermometer, Menu, X, MapPin } from 'lucide-react';
 
+
+
 const countries = [
   { code: 'US', name: 'United States' },
   { code: 'GB', name: 'United Kingdom' },
@@ -28,7 +30,7 @@ const cities = {
   FR: ['Paris', 'Marseille', 'Lyon', 'Toulouse', 'Nice', 'Nantes', 'Strasbourg', 'Montpellier', 'Bordeaux', 'Lille'],
   JP: ['Tokyo', 'Yokohama', 'Osaka', 'Nagoya', 'Sapporo', 'Fukuoka', 'Kobe', 'Kyoto', 'Kawasaki', 'Saitama'],
   RU: ['Moscow', 'Saint Petersburg', 'Novosibirsk', 'Yekaterinburg', 'Nizhny Novgorod', 'Kazan', 'Chelyabinsk', 'Omsk', 'Samara', 'Rostov-on-Don'],
-  CN: ['Shanghai', 'Beijing', 'Guangzhou', 'Shenzhen', 'Chengdu', 'Nanjing', 'Wuhan', 'Xi'an', 'Hangzhou', 'Chongqing'],
+  CN: ['Shanghai', 'Beijing', 'Guangzhou', 'Shenzhen', 'Chengdu', 'Nanjing', 'Wuhan', 'Xian', 'Hangzhou', 'Chongqing'],
   IN: ['Mumbai', 'Delhi', 'Bangalore', 'Hyderabad', 'Ahmedabad', 'Chennai', 'Kolkata', 'Surat', 'Pune', 'Jaipur'],
   BR: ['São Paulo', 'Rio de Janeiro', 'Salvador', 'Brasília', 'Fortaleza', 'Belo Horizonte', 'Manaus', 'Curitiba', 'Recife', 'Porto Alegre'],
   IT: ['Rome', 'Milan', 'Naples', 'Turin', 'Palermo', 'Genoa', 'Bologna', 'Florence', 'Bari', 'Catania'],
@@ -120,6 +122,9 @@ const WeatherTimeWidget = () => {
   useEffect(() => {
     if (window.Telegram && window.Telegram.WebApp) {
       window.Telegram.WebApp.ready();
+      // Подстройка под тему Telegram
+      const isDarkMode = window.Telegram.WebApp.colorScheme === 'dark';
+      document.body.classList.toggle('dark', isDarkMode);
     }
     const timer = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(timer);
@@ -161,7 +166,7 @@ const WeatherTimeWidget = () => {
   };
 
   const WeatherIcon = () => {
-    const iconProps = { size: 80, className: "text-white" };
+    const iconProps = { size: '10vmin', className: "text-white" };
     switch(weather.type) {
       case 'sunny': return <Sun {...iconProps} />;
       case 'cloudy': return <Cloud {...iconProps} />;
@@ -195,24 +200,24 @@ const WeatherTimeWidget = () => {
   const t = (key) => translations[settings.language][key];
 
   return (
-    <div className={`relative overflow-hidden rounded-lg shadow-lg text-white flex flex-col items-center justify-between transition-all duration-1000 ease-in-out w-full h-full ${getBackgroundClass()}`}>
+    <div className={`relative overflow-hidden shadow-lg text-white flex flex-col items-center justify-between transition-all duration-1000 ease-in-out w-full h-full ${getBackgroundClass()}`}>
       <button 
         onClick={() => setIsMenuOpen(!isMenuOpen)}
-        className="absolute top-4 left-4 z-20 bg-white bg-opacity-20 p-2 rounded-full hover:bg-opacity-30 transition-all duration-300"
+        className="absolute top-2 left-2 z-20 bg-white bg-opacity-20 p-2 rounded-full hover:bg-opacity-30 transition-all duration-300"
       >
-        {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        {isMenuOpen ? <X size="6vmin" /> : <Menu size="6vmin" />}
       </button>
 
       {isMenuOpen && (
-        <div className="absolute inset-0 bg-black bg-opacity-50 z-30 flex items-center justify-center">
-          <div className="bg-white text-black p-6 rounded-lg w-5/6 max-w-md max-h-[90vh] overflow-y-auto">
-            <h2 className="text-2xl mb-4 font-bold text-center">{t('settings')}</h2>
+        <div className="absolute inset-0 bg-black bg-opacity-50 z-30 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-800 text-black dark:text-white p-4 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <h2 className="text-xl sm:text-2xl mb-4 font-bold text-center">{t('settings')}</h2>
             <div className="mb-4">
               <label className="block mb-2 font-semibold">{t('language')}</label>
               <select 
                 value={settings.language} 
                 onChange={(e) => handleSettingChange('language', e.target.value)}
-                className="w-full p-2 border rounded bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full p-2 border rounded bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="en">English</option>
                 <option value="ru">Русский</option>
@@ -229,7 +234,7 @@ const WeatherTimeWidget = () => {
               <select 
                 value={settings.country} 
                 onChange={(e) => handleSettingChange('country', e.target.value)}
-                className="w-full p-2 border rounded bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full p-2 border rounded bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">{t('autoLocation')}</option>
                 {countries.map((country) => (
@@ -242,7 +247,7 @@ const WeatherTimeWidget = () => {
               <select 
                 value={settings.city} 
                 onChange={(e) => handleSettingChange('city', e.target.value)}
-                className="w-full p-2 border rounded bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full p-2 border rounded bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 disabled={!settings.country}
               >
                 <option value="">{t('autoLocation')}</option>
@@ -261,22 +266,22 @@ const WeatherTimeWidget = () => {
         </div>
       )}
 
-      <div className="w-full z-10 text-center mt-16">
-        <div className="text-4xl sm:text-6xl font-light mb-4">
+      <div className="w-full z-10 text-center mt-[5vh]">
+        <div className="text-[8vmin] font-light mb-[2vh]">
           {time.getHours().toString().padStart(2, '0')}:{time.getMinutes().toString().padStart(2, '0')}
         </div>
       </div>
-      <div className="flex flex-col items-center z-10 mb-16">
+      <div className="flex flex-col items-center z-10 mb-[5vh]">
         <WeatherIcon />
-        <div className="text-2xl sm:text-3xl capitalize font-light mt-4 text-center">
+        <div className="text-[4vmin] capitalize font-light mt-[2vh] text-center">
           {weather.condition}
         </div>
-        <div className="flex items-center mt-2">
-          <Thermometer className="text-white mr-2" size={24} />
-          <span className="text-3xl sm:text-4xl font-light">{weather.temp}°C</span>
+        <div className="flex items-center mt-[1vh]">
+          <Thermometer className="text-white mr-2" size="6vmin" />
+          <span className="text-[6vmin] font-light">{weather.temp}°C</span>
         </div>
-        <div className="mt-4 flex items-center text-sm sm:text-base">
-          <MapPin size={20} className="mr-2" />
+        <div className="mt-[2vh] flex items-center text-[3vmin]">
+          <MapPin size="4vmin" className="mr-2" />
           <span>{settings.city || settings.country || t('autoLocation')}</span>
         </div>
       </div>
