@@ -63,6 +63,46 @@ const translations = {
     close: 'Cerrar',
     autoLocation: 'Ubicación automática',
   },
+  de: {
+    settings: 'Einstellungen',
+    language: 'Sprache',
+    country: 'Land',
+    city: 'Stadt',
+    close: 'Schließen',
+    autoLocation: 'Automatische Ortung',
+  },
+  fr: {
+    settings: 'Paramètres',
+    language: 'Langue',
+    country: 'Pays',
+    city: 'Ville',
+    close: 'Fermer',
+    autoLocation: 'Localisation automatique',
+  },
+  it: {
+    settings: 'Impostazioni',
+    language: 'Lingua',
+    country: 'Paese',
+    city: 'Città',
+    close: 'Chiudi',
+    autoLocation: 'Posizione automatica',
+  },
+  ja: {
+    settings: '設定',
+    language: '言語',
+    country: '国',
+    city: '都市',
+    close: '閉じる',
+    autoLocation: '自動位置',
+  },
+  zh: {
+    settings: '设置',
+    language: '语言',
+    country: '国家',
+    city: '城市',
+    close: '关闭',
+    autoLocation: '自动定位',
+  },
 };
 
 const WeatherTimeWidget = () => {
@@ -120,7 +160,7 @@ const WeatherTimeWidget = () => {
   };
 
   const WeatherIcon = () => {
-    const iconProps = { size: 80, className: "text-white animate-pulse" };
+    const iconProps = { size: 80, className: "text-white" };
     switch(weather.type) {
       case 'sunny': return <Sun {...iconProps} />;
       case 'cloudy': return <Cloud {...iconProps} />;
@@ -154,7 +194,7 @@ const WeatherTimeWidget = () => {
   const t = (key) => translations[settings.language][key];
 
   return (
-    <div className={`relative overflow-hidden p-4 sm:p-8 rounded-3xl shadow-lg text-white flex flex-col items-center justify-between transition-all duration-1000 ease-in-out w-full h-screen ${getBackgroundClass()}`}>
+    <div className={`relative overflow-hidden rounded-lg shadow-lg text-white flex flex-col items-center justify-between transition-all duration-1000 ease-in-out w-full h-full ${getBackgroundClass()}`}>
       <button 
         onClick={() => setIsMenuOpen(!isMenuOpen)}
         className="absolute top-4 left-4 z-20 bg-white bg-opacity-20 p-2 rounded-full hover:bg-opacity-30 transition-all duration-300"
@@ -163,8 +203,8 @@ const WeatherTimeWidget = () => {
       </button>
 
       {isMenuOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-30 flex items-center justify-center">
-          <div className="bg-white text-black p-6 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <div className="absolute inset-0 bg-black bg-opacity-50 z-30 flex items-center justify-center">
+          <div className="bg-white text-black p-6 rounded-lg w-5/6 max-w-md max-h-[90vh] overflow-y-auto">
             <h2 className="text-2xl mb-4 font-bold text-center">{t('settings')}</h2>
             <div className="mb-4">
               <label className="block mb-2 font-semibold">{t('language')}</label>
@@ -176,6 +216,11 @@ const WeatherTimeWidget = () => {
                 <option value="en">English</option>
                 <option value="ru">Русский</option>
                 <option value="es">Español</option>
+                <option value="de">Deutsch</option>
+                <option value="fr">Français</option>
+                <option value="it">Italiano</option>
+                <option value="ja">日本語</option>
+                <option value="zh">中文</option>
               </select>
             </div>
             <div className="mb-4">
@@ -215,17 +260,17 @@ const WeatherTimeWidget = () => {
         </div>
       )}
 
-      <div className="w-full z-10 text-center">
-        <div className="text-4xl sm:text-6xl font-light mb-4 animate-fade-in">
+      <div className="w-full z-10 text-center mt-16">
+        <div className="text-4xl sm:text-6xl font-light mb-4">
           {time.getHours().toString().padStart(2, '0')}:{time.getMinutes().toString().padStart(2, '0')}
         </div>
       </div>
-      <div className="flex flex-col items-center z-10">
+      <div className="flex flex-col items-center z-10 mb-16">
         <WeatherIcon />
-        <div className="text-2xl sm:text-3xl capitalize font-light mt-4 animate-fade-in text-center">
+        <div className="text-2xl sm:text-3xl capitalize font-light mt-4 text-center">
           {weather.condition}
         </div>
-        <div className="flex items-center mt-2 animate-fade-in">
+        <div className="flex items-center mt-2">
           <Thermometer className="text-white mr-2" size={24} />
           <span className="text-3xl sm:text-4xl font-light">{weather.temp}°C</span>
         </div>

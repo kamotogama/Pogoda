@@ -20,24 +20,6 @@ body {
   width: 100%;
 }
 
-@keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-.animate-fade-in {
-  animation: fade-in 0.5s ease-out;
-}
-
-.animate-pulse {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
 select, button {
   appearance: none;
   -webkit-appearance: none;
@@ -70,7 +52,7 @@ select {
 
 /* Ensure full height on mobile devices */
 @supports (-webkit-touch-callout: none) {
-  .h-screen {
+  .h-full {
     height: -webkit-fill-available;
   }
 }
