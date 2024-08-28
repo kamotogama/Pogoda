@@ -82,6 +82,154 @@ body {
   animation-delay: 0.2s;
 }
 
+/* Sunny effect */
+.sun-rays {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+  animation: rotate 60s linear infinite;
+}
+
+.sun-glare {
+  position: absolute;
+  top: 10%;
+  left: 10%;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  filter: blur(5px);
+  animation: glare 10s ease-in-out infinite;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes glare {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.5); }
+}
+
+/* Cloudy effect */
+.cloud {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  animation: float-cloud linear infinite;
+}
+
+.cloud1 {
+  width: 100px;
+  height: 40px;
+  top: 20%;
+  left: -100px;
+  animation-duration: 40s;
+}
+
+.cloud2 {
+  width: 150px;
+  height: 60px;
+  top: 40%;
+  left: -150px;
+  animation-duration: 30s;
+}
+
+.cloud3 {
+  width: 80px;
+  height: 30px;
+  top: 60%;
+  left: -80px;
+  animation-duration: 50s;
+}
+
+@keyframes float-cloud {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(calc(100vw + 100%)); }
+}
+
+/* Rainy effect */
+.rain {
+  position: absolute;
+  top: -100px;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.7) 100%);
+  animation: rain 0.3s linear infinite;
+}
+
+@keyframes rain {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(calc(100% + 100px)); }
+}
+
+/* Snowy effect */
+.snow {
+  position: absolute;
+  top: -100px;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, white 10%, transparent 10%) 0 0,
+              radial-gradient(circle, white 10%, transparent 10%) 25px 25px;
+  background-size: 50px 50px;
+  animation: snow 5s linear infinite;
+}
+
+@keyframes snow {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(calc(100% + 100px)); }
+}
+
+/* Stormy effect */
+.lightning {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: white;
+  opacity: 0;
+  animation: lightning 5s infinite;
+}
+
+@keyframes lightning {
+  0%, 100% { opacity: 0; }
+  1%, 4%, 7% { opacity: 0.1; }
+  2%, 5%, 8% { opacity: 1; }
+}
+
+/* Night effect */
+.stars {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, white 1px, transparent 1px) 0 0;
+  background-size: 50px 50px;
+}
+
+.twinkling {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, white 1px, transparent 1px) 0 0;
+  background-size: 50px 50px;
+  animation: twinkle 4s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
 select, button {
   appearance: none;
   -webkit-appearance: none;

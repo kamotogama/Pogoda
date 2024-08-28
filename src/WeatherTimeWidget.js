@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Sun, Cloud, CloudRain, CloudSnow, CloudLightning, Moon, Thermometer, Menu, X, MapPin } from 'lucide-react';
 
-
 const countries = [
   { code: 'US', name: 'United States' },
   { code: 'GB', name: 'United Kingdom' },
@@ -178,7 +177,6 @@ const WeatherTimeWidget = () => {
     }
   };
 
-
   const getBackgroundClass = () => {
     switch(weather.type) {
       case 'sunny': return 'bg-gradient-to-br from-blue-400 via-yellow-300 to-orange-500';
@@ -188,6 +186,53 @@ const WeatherTimeWidget = () => {
       case 'stormy': return 'bg-gradient-to-br from-gray-700 via-purple-600 to-gray-800';
       case 'night': return 'bg-gradient-to-br from-indigo-900 via-purple-800 to-black';
       default: return 'bg-gradient-to-br from-blue-500 to-purple-600';
+    }
+  };
+
+  const BackgroundEffect = () => {
+    switch(weather.type) {
+      case 'sunny':
+        return (
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="sun-rays"></div>
+            <div className="sun-glare"></div>
+          </div>
+        );
+      case 'cloudy':
+        return (
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="cloud cloud1"></div>
+            <div className="cloud cloud2"></div>
+            <div className="cloud cloud3"></div>
+          </div>
+        );
+      case 'rainy':
+        return (
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="rain"></div>
+          </div>
+        );
+      case 'snowy':
+        return (
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="snow"></div>
+          </div>
+        );
+      case 'stormy':
+        return (
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="lightning"></div>
+          </div>
+        );
+      case 'night':
+        return (
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="stars"></div>
+            <div className="twinkling"></div>
+          </div>
+        );
+      default:
+        return null;
     }
   };
 
@@ -201,7 +246,8 @@ const WeatherTimeWidget = () => {
   const t = (key) => translations[settings.language][key];
   return (
     <div className={`relative overflow-hidden shadow-lg text-white flex flex-col items-center justify-between transition-all duration-1000 ease-in-out w-full h-full ${getBackgroundClass()}`}>
-      <button 
+      <BackgroundEffect />
+            <button 
         onClick={() => setIsMenuOpen(!isMenuOpen)}
         className="absolute top-4 left-4 z-20 bg-white bg-opacity-20 p-2 rounded-full hover:bg-opacity-30 transition-all duration-300"
       >
