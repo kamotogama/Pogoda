@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Sun, Cloud, CloudRain, CloudSnow, CloudLightning, Moon, Thermometer, Menu, X, Globe, MapPin } from 'lucide-react';
-import WebApp from '@twa-dev/sdk';
+import { Sun, Cloud, CloudRain, CloudSnow, CloudLightning, Moon, Thermometer, Menu, X, MapPin } from 'lucide-react';
 
 const countries = [
   { code: 'US', name: 'United States' },
@@ -119,7 +118,9 @@ const WeatherTimeWidget = () => {
   });
 
   useEffect(() => {
-    WebApp.ready();
+    if (window.Telegram && window.Telegram.WebApp) {
+      window.Telegram.WebApp.ready();
+    }
     const timer = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
