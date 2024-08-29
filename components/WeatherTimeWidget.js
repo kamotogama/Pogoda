@@ -447,14 +447,20 @@ const WeatherTimeWidget = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [news, setNews] = useState([]);
   const [currentNewsIndex, setCurrentNewsIndex] = useState(0);
-  const [settings, setSettings] = useState(() => {
-    const savedSettings = localStorage.getItem('weatherSettings');
-    return savedSettings ? JSON.parse(savedSettings) : {
-      language: 'en',
-      country: '',
-      city: '',
-    };
+  const [settings, setSettings] = useState({
+    language: 'en',
+    country: '',
+    city: '',
   });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedSettings = localStorage.getItem('weatherSettings');
+      if (savedSettings) {
+        setSettings(JSON.parse(savedSettings));
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (window.Telegram && window.Telegram.WebApp) {
@@ -467,7 +473,9 @@ const WeatherTimeWidget = () => {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('weatherSettings', JSON.stringify(settings));
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('weatherSettings', JSON.stringify(settings));
+    }
     if (!settings.city && !settings.country) {
       fetchLocation();
     } else {
