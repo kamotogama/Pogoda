@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Sun, Cloud, CloudRain, CloudSnow, CloudLightning, Moon, Thermometer, Menu, X, MapPin, ChevronRight, ChevronLeft } from 'lucide-react';
 
 
-
 const countries = {
   US: 'United States',
   GB: 'United Kingdom',
@@ -502,18 +501,16 @@ const WeatherTimeWidget = () => {
 
   const fetchNews = async () => {
     try {
-      const response = await fetch(
-        `https://gnews.io/api/v4/top-headlines?lang=${settings.language}&token=YOUR_GNEWS_API_KEY`
-      );
+      const response = await fetch(`/api/getNews?language=${settings.language}`);
       const data = await response.json();
-      setNews(data.articles.slice(0, 5));
+      setNews(data);
     } catch (error) {
       console.error('Error fetching news:', error);
     }
   };
 
   const WeatherIcon = () => {
-    const iconProps = { size: '15vmin', className: `text-white weather-icon ${weather.type}-icon` };
+    const iconProps = { size: '15vmin', className: `text-white weather-icon ${weather.type}` };
     switch(weather.type) {
       case 'sunny': return <Sun {...iconProps} />;
       case 'cloudy': return <Cloud {...iconProps} />;
@@ -554,18 +551,18 @@ const WeatherTimeWidget = () => {
 
   const NewsItem = ({ item }) => (
     <div className="news-item">
-      <h3 className="text-[3vmin] font-semibold">{item.title}</h3>
-      <p className="text-[2.5vmin] mt-2">{item.description}</p>
+      <h3 className="news-title text-outline">{item.title}</h3>
+      <p className="news-description text-outline">{item.description}</p>
     </div>
   );
 
   const MobileNews = () => (
     <div className="mt-8">
-      <h2 className="text-[4vmin] font-bold mb-4 text-shadow">{t('topNews')}</h2>
+      <h2 className="text-[4vmin] font-bold mb-4 text-outline">{t('topNews')}</h2>
       {news.length > 0 ? (
         <NewsItem item={news[currentNewsIndex]} />
       ) : (
-        <p className="text-[3vmin] text-shadow">{t('noNews')}</p>
+        <p className="text-[3vmin] text-outline">{t('noNews')}</p>
       )}
       {news.length > 1 && (
         <div className="flex justify-between mt-4">
@@ -581,12 +578,12 @@ const WeatherTimeWidget = () => {
   );
 
   const DesktopNews = () => (
-    <div className="news-sidebar">
-      <h2 className="text-[4vmin] font-bold mb-4 text-shadow">{t('topNews')}</h2>
+    <div className="news-container">
+      <h2 className="text-[4vmin] font-bold mb-4 text-outline">{t('topNews')}</h2>
       {news.length > 0 ? (
         news.map((item, index) => <NewsItem key={index} item={item} />)
       ) : (
-        <p className="text-[3vmin] text-shadow">{t('noNews')}</p>
+        <p className="text-[3vmin] text-outline">{t('noNews')}</p>
       )}
     </div>
   );
@@ -609,7 +606,7 @@ const WeatherTimeWidget = () => {
               <select 
                 value={settings.language} 
                 onChange={(e) => handleSettingChange('language', e.target.value)}
-                className="w-full p-2 border rounded bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full p-2 border rounded bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 dark:text-white"
               >
                 {Object.keys(translations).map((lang) => (
                   <option key={lang} value={lang}>{translations[lang].language}</option>
@@ -621,7 +618,7 @@ const WeatherTimeWidget = () => {
               <select 
                 value={settings.country} 
                 onChange={(e) => handleSettingChange('country', e.target.value)}
-                className="w-full p-2 border rounded bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full p-2 border rounded bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 dark:text-white"
               >
                 <option value="">{t('autoLocation')}</option>
                 {Object.entries(t('countries')).map(([code, name]) => (
@@ -634,7 +631,7 @@ const WeatherTimeWidget = () => {
               <select 
                 value={settings.city} 
                 onChange={(e) => handleSettingChange('city', e.target.value)}
-                className="w-full p-2 border rounded bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full p-2 border rounded bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 dark:text-white"
                 disabled={!settings.country}
               >
                 <option value="">{t('autoLocation')}</option>
@@ -656,26 +653,26 @@ const WeatherTimeWidget = () => {
       <div className="w-full z-10 text-center mt-8">
         <div className="flex justify-center items-center space-x-4">
           <DayNightIcon />
-          <div className="text-[8vmin] font-light text-shadow">
+          <div className="text-[8vmin] font-light text-outline">
             {time.getHours().toString().padStart(2, '0')}:{time.getMinutes().toString().padStart(2, '0')}
           </div>
           <DayNightIcon />
         </div>
-        <div className="text-[3vmin] mt-2 text-shadow">
+        <div className="text-[3vmin] mt-2 text-outline">
           {time.toLocaleDateString(settings.language, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
         </div>
       </div>
 
       <div className="flex flex-col items-center z-10 my-8">
         <WeatherIcon />
-        <div className="text-[5vmin] capitalize font-light mt-4 text-center text-shadow">
+        <div className="text-[5vmin] capitalize font-light mt-4 text-center text-outline">
           {weather.condition}
         </div>
         <div className="flex items-center mt-2">
           <Thermometer className="text-white mr-2" size="7vmin" />
-          <span className="text-[7vmin] font-light text-shadow">{weather.temp}°C</span>
+          <span className="text-[7vmin] font-light text-outline">{weather.temp}°C</span>
         </div>
-        <div className="mt-4 flex items-center text-[3.5vmin] text-shadow">
+        <div className="mt-4 flex items-center text-[3.5vmin] text-outline">
           <MapPin size="5vmin" className="mr-2" />
           <span>{settings.city || settings.country || t('autoLocation')}</span>
         </div>
