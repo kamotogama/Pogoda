@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Sun, Cloud, CloudRain, CloudSnow, CloudLightning, Moon, Thermometer, Menu, X, MapPin } from 'lucide-react';
+import { Sun, Cloud, CloudRain, CloudSnow, CloudLightning, Moon, Thermometer, Menu, X, MapPin, ChevronRight, ChevronLeft } from 'lucide-react';
+
 
 
 const countries = {
@@ -446,6 +447,7 @@ const WeatherTimeWidget = () => {
   const [weather, setWeather] = useState({ type: 'sunny', temp: 13, condition: '' });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [news, setNews] = useState([]);
+  const [currentNewsIndex, setCurrentNewsIndex] = useState(0);
   const [settings, setSettings] = useState(() => {
     const savedSettings = localStorage.getItem('weatherSettings');
     return savedSettings ? JSON.parse(savedSettings) : {
@@ -466,10 +468,10 @@ const WeatherTimeWidget = () => {
   }, []);
 
   useEffect(() => {
-	  localStorage.setItem('weatherSettings', JSON.stringify(settings));
-	  fetchWeather();
-	  fetchNews();
-	}, [settings]);
+    localStorage.setItem('weatherSettings', JSON.stringify(settings));
+    fetchWeather();
+    fetchNews();
+  }, [settings]);
 
   const fetchWeather = async () => {
     try {
@@ -499,22 +501,19 @@ const WeatherTimeWidget = () => {
   };
 
   const fetchNews = async () => {
-	  const API_KEY = '24e885e8c78971ed433b9aadaa2b4cbf'; // Замените на ваш ключ API
-	  const country = settings.country.toLowerCase() || 'us';
-	  const url = `https://gnews.io/api/v4/top-headlines?country=${country}&token=${API_KEY}&lang=${settings.language}`;
-
-	  try {
-		const response = await fetch(url);
-		const data = await response.json();
-		setNews(data.articles.slice(0, 5));
-	  } catch (error) {
-		console.error('Error fetching news:', error);
-	  }
-	};
-
+    try {
+      const response = await fetch(
+        `https://gnews.io/api/v4/top-headlines?lang=${settings.language}&token=YOUR_GNEWS_API_KEY`
+      );
+      const data = await response.json();
+      setNews(data.articles.slice(0, 5));
+    } catch (error) {
+      console.error('Error fetching news:', error);
+    }
+  };
 
   const WeatherIcon = () => {
-    const iconProps = { size: '15vmin', className: "text-white weather-icon" };
+    const iconProps = { size: '15vmin', className: `text-white weather-icon ${weather.type}-icon` };
     switch(weather.type) {
       case 'sunny': return <Sun {...iconProps} />;
       case 'cloudy': return <Cloud {...iconProps} />;
@@ -532,11 +531,13 @@ const WeatherTimeWidget = () => {
   };
 
   const getBackgroundClass = () => {
+    const hour = time.getHours();
+    const isNight = hour < 6 || hour >= 18;
     switch(weather.type) {
-      case 'sunny': return 'bg-sunny';
-      case 'cloudy': return 'bg-cloudy';
-      case 'rainy': return 'bg-rainy';
-      case 'snowy': return 'bg-snowy';
+      case 'sunny': return isNight ? 'bg-night' : 'bg-sunny';
+      case 'cloudy': return isNight ? 'bg-night' : 'bg-cloudy';
+      case 'rainy': return isNight ? 'bg-night' : 'bg-rainy';
+      case 'snowy': return isNight ? 'bg-night' : 'bg-snowy';
       case 'stormy': return 'bg-stormy';
       default: return 'bg-default';
     }
@@ -550,6 +551,45 @@ const WeatherTimeWidget = () => {
   };
 
   const t = (key) => translations[settings.language][key];
+
+  const NewsItem = ({ item }) => (
+    <div className="news-item">
+      <h3 className="text-[3vmin] font-semibold">{item.title}</h3>
+      <p className="text-[2.5vmin] mt-2">{item.description}</p>
+    </div>
+  );
+
+  const MobileNews = () => (
+    <div className="mt-8">
+      <h2 className="text-[4vmin] font-bold mb-4 text-shadow">{t('topNews')}</h2>
+      {news.length > 0 ? (
+        <NewsItem item={news[currentNewsIndex]} />
+      ) : (
+        <p className="text-[3vmin] text-shadow">{t('noNews')}</p>
+      )}
+      {news.length > 1 && (
+        <div className="flex justify-between mt-4">
+          <button onClick={() => setCurrentNewsIndex((prev) => (prev === 0 ? news.length - 1 : prev - 1))}>
+            <ChevronLeft size="6vmin" />
+          </button>
+          <button onClick={() => setCurrentNewsIndex((prev) => (prev === news.length - 1 ? 0 : prev + 1))}>
+            <ChevronRight size="6vmin" />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+
+  const DesktopNews = () => (
+    <div className="news-sidebar">
+      <h2 className="text-[4vmin] font-bold mb-4 text-shadow">{t('topNews')}</h2>
+      {news.length > 0 ? (
+        news.map((item, index) => <NewsItem key={index} item={item} />)
+      ) : (
+        <p className="text-[3vmin] text-shadow">{t('noNews')}</p>
+      )}
+    </div>
+  );
   
   return (
     <div className={`relative overflow-hidden shadow-lg text-white flex flex-col items-center justify-between transition-all duration-1000 ease-in-out w-full h-full min-h-screen ${getBackgroundClass()}`}>
@@ -616,45 +656,37 @@ const WeatherTimeWidget = () => {
       <div className="w-full z-10 text-center mt-8">
         <div className="flex justify-center items-center space-x-4">
           <DayNightIcon />
-          <div className="text-[8vmin] font-light">
+          <div className="text-[8vmin] font-light text-shadow">
             {time.getHours().toString().padStart(2, '0')}:{time.getMinutes().toString().padStart(2, '0')}
           </div>
           <DayNightIcon />
         </div>
-        <div className="text-[3vmin] mt-2">
+        <div className="text-[3vmin] mt-2 text-shadow">
           {time.toLocaleDateString(settings.language, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
         </div>
       </div>
 
       <div className="flex flex-col items-center z-10 my-8">
         <WeatherIcon />
-        <div className="text-[5vmin] capitalize font-light mt-4 text-center">
+        <div className="text-[5vmin] capitalize font-light mt-4 text-center text-shadow">
           {weather.condition}
         </div>
         <div className="flex items-center mt-2">
           <Thermometer className="text-white mr-2" size="7vmin" />
-          <span className="text-[7vmin] font-light">{weather.temp}°C</span>
+          <span className="text-[7vmin] font-light text-shadow">{weather.temp}°C</span>
         </div>
-        <div className="mt-4 flex items-center text-[3.5vmin]">
+        <div className="mt-4 flex items-center text-[3.5vmin] text-shadow">
           <MapPin size="5vmin" className="mr-2" />
           <span>{settings.city || settings.country || t('autoLocation')}</span>
         </div>
       </div>
 
-      <div className="w-full max-w-2xl mx-auto px-4 mb-8">
-        <h2 className="text-[4vmin] font-bold mb-4">{t('topNews')}</h2>
-        {news.length > 0 ? (
-          <ul className="space-y-4">
-            {news.map((item, index) => (
-              <li key={index} className="bg-white bg-opacity-20 p-4 rounded-lg">
-                <h3 className="text-[3vmin] font-semibold">{item.title}</h3>
-                <p className="text-[2.5vmin] mt-2">{item.description}</p>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-[3vmin]">{t('noNews')}</p>
-        )}
+      <div className="hidden md:block">
+        <DesktopNews />
+      </div>
+
+      <div className="md:hidden">
+        <MobileNews />
       </div>
     </div>
   );
