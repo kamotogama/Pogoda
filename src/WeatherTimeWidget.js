@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Sun, Cloud, CloudRain, CloudSnow, CloudLightning, Moon, Thermometer, Menu, X, MapPin, ChevronRight, ChevronLeft } from 'lucide-react';
 
-
 const countries = {
   US: 'United States',
   GB: 'United Kingdom',
@@ -443,6 +442,7 @@ nl: {
 
 };
 
+
 const WeatherTimeWidget = () => {
   const [time, setTime] = useState(new Date());
   const [weather, setWeather] = useState({ type: 'sunny', temp: 13, condition: '' });
@@ -473,6 +473,23 @@ const WeatherTimeWidget = () => {
     fetchWeather();
     fetchNews();
   }, [settings]);
+  
+  useEffect(() => {
+    const fetchNews = async () => {
+      try {
+        const response = await fetch('/news.json');
+        const data = await response.json();
+        setNews(data[settings.language] || []);
+      } catch (error) {
+        console.error('Error fetching news:', error);
+      }
+    };
+
+    fetchNews();
+    const newsInterval = setInterval(fetchNews, 5 * 60 * 1000); // Обновляем новости каждые 5 минут
+
+    return () => clearInterval(newsInterval);
+  }, [settings.language]);
 
   const fetchWeather = async () => {
     try {
@@ -502,35 +519,25 @@ const WeatherTimeWidget = () => {
   };
 
   const fetchNews = async () => {
-    try {
-      // Простой парсер новостей (пример с использованием RSS-ленты BBC)
-      const response = await fetch(`https://cors-anywhere.herokuapp.com/http://feeds.bbci.co.uk/news/world/rss.xml`);
-      const text = await response.text();
-      const parser = new DOMParser();
-      const xmlDoc = parser.parseFromString(text, "text/xml");
-      const items = xmlDoc.getElementsByTagName("item");
-      const newsItems = Array.from(items).slice(0, 5).map(item => ({
-        title: item.getElementsByTagName("title")[0].textContent,
-        description: item.getElementsByTagName("description")[0].textContent
-      }));
-      setNews(newsItems);
-    } catch (error) {
-      console.error('Error fetching news:', error);
-    }
+    // Заглушка для новостей
+    setNews([
+      { title: "Placeholder News 1", description: "This is a placeholder for the first news item." },
+      { title: "Placeholder News 2", description: "This is a placeholder for the second news item." },
+      { title: "Placeholder News 3", description: "This is a placeholder for the third news item." },
+    ]);
   };
 
   const WeatherIcon = () => {
-	  const iconProps = { size: '15vmin', className: `weather-icon ${weather.type}` };
-	  switch(weather.type) {
-		case 'sunny': return <Sun {...iconProps} />;
-		case 'cloudy': return <Cloud {...iconProps} />;
-		case 'rainy': return <CloudRain {...iconProps} />;
-		case 'snowy': return <CloudSnow {...iconProps} />;
-		case 'stormy': return <CloudLightning {...iconProps} />;
-		default: return <Sun {...iconProps} />;
-	  }
-	};
-
+    const iconProps = { size: '15vmin', className: `text-white weather-icon ${weather.type}-icon` };
+    switch(weather.type) {
+      case 'sunny': return <Sun {...iconProps} />;
+      case 'cloudy': return <Cloud {...iconProps} />;
+      case 'rainy': return <CloudRain {...iconProps} />;
+      case 'snowy': return <CloudSnow {...iconProps} />;
+      case 'stormy': return <CloudLightning {...iconProps} />;
+      default: return <Sun {...iconProps} />;
+    }
+  };
 
   const DayNightIcon = () => {
     const hour = time.getHours();
@@ -600,107 +607,104 @@ const WeatherTimeWidget = () => {
   );
   
   return (
-	  <div className={`weather-widget relative overflow-hidden shadow-lg text-white flex flex-col items-center justify-between transition-all duration-1000 ease-in-out w-full h-full ${getBackgroundClass()}`}>
-		<button 
-		  onClick={() => setIsMenuOpen(!isMenuOpen)}
-		  className="absolute top-4 left-4 z-20 bg-white bg-opacity-20 p-2 rounded-full hover:bg-opacity-30 transition-all duration-300"
-		>
-		  {isMenuOpen ? <X size="6vmin" /> : <Menu size="6vmin" />}
-		</button>
+    <div className={`weather-widget relative overflow-hidden shadow-lg text-white flex flex-col items-center justify-between transition-all duration-1000 ease-in-out w-full h-full ${getBackgroundClass()}`}>
+      <button 
+        onClick={() => setIsMenuOpen(!isMenuOpen)}
+        className="absolute top-4 left-4 z-20 bg-white bg-opacity-20 p-2 rounded-full hover:bg-opacity-30 transition-all duration-300"
+      >
+        {isMenuOpen ? <X size="6vmin" /> : <Menu size="6vmin" />}
+      </button>
 
-		{isMenuOpen && (
-		  <div className="menu-overlay absolute inset-0 z-30 flex items-center justify-center p-4 animate-fadeIn">
-			<div className="menu-content bg-black bg-opacity-80 p-4 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto animate-slideInUp">
-			  <h2 className="text-xl sm:text-2xl mb-4 font-bold text-center text-white">{t('settings')}</h2>
-			  <div className="mb-4">
-				<label className="block mb-2 font-semibold text-white">{t('language')}</label>
-				<select 
-				  value={settings.language} 
-				  onChange={(e) => handleSettingChange('language', e.target.value)}
-				  className="w-full p-2 border rounded bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-				>
-				  {Object.keys(translations).map((lang) => (
-					<option key={lang} value={lang}>{translations[lang].language}</option>
-				  ))}
-				</select>
-			  </div>
-			  <div className="mb-4">
-				<label className="block mb-2 font-semibold text-white">{t('country')}</label>
-				<select 
-				  value={settings.country} 
-				  onChange={(e) => handleSettingChange('country', e.target.value)}
-				  className="w-full p-2 border rounded bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-				>
-				  <option value="">{t('autoLocation')}</option>
-				  {Object.entries(t('countries')).map(([code, name]) => (
-					<option key={code} value={code}>{name}</option>
-				  ))}
-				</select>
-			  </div>
-			  <div className="mb-4">
-				<label className="block mb-2 font-semibold text-white">{t('city')}</label>
-				<select 
-				  value={settings.city} 
-				  onChange={(e) => handleSettingChange('city', e.target.value)}
-				  className="w-full p-2 border rounded bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-				  disabled={!settings.country}
-				>
-				  <option value="">{t('autoLocation')}</option>
-				  {settings.country && t('cities')[settings.country].map((city) => (
-					<option key={city} value={city}>{city}</option>
-				  ))}
-				</select>
-			  </div>
-			  <button 
-				onClick={() => setIsMenuOpen(false)}
-				className="w-full bg-blue-500 text-white p-2 rounded font-semibold hover:bg-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-700"
-			  >
-				{t('close')}
-			  </button>
-			</div>
-		  </div>
-		)}
+      {isMenuOpen && (
+        <div className="menu-overlay absolute inset-0 z-30 flex items-center justify-center p-4 animate-fadeIn">
+          <div className="menu-content p-4 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto animate-slideIn">
+            <h2 className="text-xl sm:text-2xl mb-4 font-bold text-center">{t('settings')}</h2>
+            <div className="mb-4">
+              <label className="block mb-2 font-semibold">{t('language')}</label>
+              <select 
+                value={settings.language} 
+                onChange={(e) => handleSettingChange('language', e.target.value)}
+                className="w-full p-2 border rounded bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {Object.keys(translations).map((lang) => (
+                  <option key={lang} value={lang}>{translations[lang].language}</option>
+                ))}
+              </select>
+            </div>
+            <div className="mb-4">
+              <label className="block mb-2 font-semibold">{t('country')}</label>
+              <select 
+                value={settings.country} 
+                onChange={(e) => handleSettingChange('country', e.target.value)}
+                className="w-full p-2 border rounded bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">{t('autoLocation')}</option>
+                {Object.entries(t('countries')).map(([code, name]) => (
+                  <option key={code} value={code}>{name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="mb-4">
+              <label className="block mb-2 font-semibold">{t('city')}</label>
+              <select 
+                value={settings.city} 
+                onChange={(e) => handleSettingChange('city', e.target.value)}
+                className="w-full p-2 border rounded bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={!settings.country}
+              >
+                <option value="">{t('autoLocation')}</option>
+                {settings.country && t('cities')[settings.country].map((city) => (
+                  <option key={city} value={city}>{city}</option>
+                ))}
+              </select>
+            </div>
+            <button 
+              onClick={() => setIsMenuOpen(false)}
+              className="w-full bg-blue-500 text-white p-2 rounded font-semibold hover:bg-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-700"
+            >
+              {t('close')}
+            </button>
+          </div>
+        </div>
+      )}
 
-		<div className="w-full z-10 text-center mt-8">
-		  <div className="flex justify-center items-center space-x-4">
-			<DayNightIcon />
-			<div className="text-[8vmin] font-light text-outline">
-			  {time.getHours().toString().padStart(2, '0')}:{time.getMinutes().toString().padStart(2, '0')}
-			</div>
-			<DayNightIcon />
-		  </div>
-		  <div className="text-[3vmin] mt-2 text-outline">
-			{time.toLocaleDateString(settings.language, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-		  </div>
-		</div>
+      <div className="w-full z-10 text-center mt-8">
+        <div className="flex justify-center items-center space-x-4">
+          <DayNightIcon />
+          <div className="text-[8vmin] font-light text-shadow">
+            {time.getHours().toString().padStart(2, '0')}:{time.getMinutes().toString().padStart(2, '0')}
+          </div>
+          <DayNightIcon />
+        </div>
+        <div className="text-[3vmin] mt-2 text-shadow">
+          {time.toLocaleDateString(settings.language, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+        </div>
+      </div>
 
-		<div className="flex flex-col items-center z-10 my-8">
-		  <WeatherIcon />
-		  <div className="text-[5vmin] capitalize font-light mt-4 text-center text-outline">
-			{weather.condition}
-		  </div>
-		  <div className="flex items-center mt-2">
-			<Thermometer className="text-white mr-2" size="7vmin" />
-			<span className="text-[7vmin] font-light text-outline">{weather.temp}°C</span>
-		  </div>
-		  <div className="mt-4 flex items-center text-[3.5vmin] text-outline">
-			<MapPin size="5vmin" className="mr-2" />
-			<span>{settings.city || settings.country || t('autoLocation')}</span>
-		  </div>
-		</div>
+      <div className="flex flex-col items-center z-10 my-8">
+        <WeatherIcon />
+        <div className="text-[5vmin] capitalize font-light mt-4 text-center text-shadow">
+          {weather.condition}
+        </div>
+        <div className="flex items-center mt-2">
+          <Thermometer className="text-white mr-2" size="7vmin" />
+          <span className="text-[7vmin] font-light text-shadow">{weather.temp}°C</span>
+        </div>
+        <div className="mt-4 flex items-center text-[3.5vmin] text-shadow">
+          <MapPin size="5vmin" className="mr-2" />
+          <span>{settings.city || settings.country || t('autoLocation')}</span>
+        </div>
+      </div>
 
-		<div className="news-container">
-		  <h2 className="text-[4vmin] font-bold mb-4 text-outline">{t('topNews')}</h2>
-		  {news.length > 0 ? (
-			news.map((item, index) => (
-			  <div key={index} className="news-item">
-				<h3 className="news-title text-outline">{item.title}</h3>
-				<p className="news-description text-outline">{item.description}</p>
-			  </div>
-			))
-		  ) : (
-			<p className="text-[3vmin] text-outline">{t('noNews')}</p>
-		  )}
-		</div>
-	  </div>
-	);
+      <div className="hidden md:block">
+        <DesktopNews />
+      </div>
+
+      <div className="md:hidden">
+        <MobileNews />
+      </div>
+    </div>
+  );
+};
+
+export default WeatherTimeWidget;
