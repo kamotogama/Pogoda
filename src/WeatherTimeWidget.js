@@ -471,6 +471,7 @@ const WeatherTimeWidget = () => {
     fetchNews();
   }, [settings]);
 
+
   const fetchWeather = async () => {
     try {
       const location = settings.city || settings.country || 'auto:ip';
@@ -509,9 +510,8 @@ const WeatherTimeWidget = () => {
       console.error('Error fetching news:', error);
     }
   };
-
   const WeatherIcon = () => {
-    const iconProps = { size: '15vmin', className: "text-white" };
+    const iconProps = { size: '15vmin', className: "text-white weather-icon" };
     switch(weather.type) {
       case 'sunny': return <Sun {...iconProps} />;
       case 'cloudy': return <Cloud {...iconProps} />;
@@ -524,7 +524,7 @@ const WeatherTimeWidget = () => {
 
   const DayNightIcon = () => {
     const hour = time.getHours();
-    const iconProps = { size: '8vmin', className: "text-white opacity-50" };
+    const iconProps = { size: '4vmin', className: "text-white opacity-80" };
     return (hour >= 6 && hour < 18) ? <Sun {...iconProps} /> : <Moon {...iconProps} />;
   };
 
@@ -547,8 +547,8 @@ const WeatherTimeWidget = () => {
   };
 
   const t = (key) => translations[settings.language][key];
-  
-  return (
+
+    return (
     <div className={`relative overflow-hidden shadow-lg text-white flex flex-col items-center justify-between transition-all duration-1000 ease-in-out w-full h-full min-h-screen ${getBackgroundClass()}`}>
       <button 
         onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -568,9 +568,16 @@ const WeatherTimeWidget = () => {
                 onChange={(e) => handleSettingChange('language', e.target.value)}
                 className="w-full p-2 border rounded bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                {Object.keys(translations).map((lang) => (
-                  <option key={lang} value={lang}>{translations[lang].language}</option>
-                ))}
+                <option value="en">English</option>
+                <option value="ru">Русский</option>
+                <option value="es">Español</option>
+                <option value="de">Deutsch</option>
+                <option value="fr">Français</option>
+                <option value="it">Italiano</option>
+                <option value="ja">日本語</option>
+                <option value="zh">中文</option>
+                <option value="nl">Nederlands</option>
+                <option value="sv">Svenska</option>
               </select>
             </div>
             <div className="mb-4">
@@ -611,11 +618,14 @@ const WeatherTimeWidget = () => {
       )}
 
       <div className="w-full z-10 text-center mt-8">
-        <DayNightIcon />
-        <div className="text-[8vmin] font-light mb-2">
-          {time.getHours().toString().padStart(2, '0')}:{time.getMinutes().toString().padStart(2, '0')}
+        <div className="flex justify-center items-center space-x-4">
+          <DayNightIcon />
+          <div className="text-[8vmin] font-light">
+            {time.getHours().toString().padStart(2, '0')}:{time.getMinutes().toString().padStart(2, '0')}
+          </div>
+          <DayNightIcon />
         </div>
-        <div className="text-[4vmin] font-light">
+        <div className="text-[3vmin] mt-2">
           {time.toLocaleDateString(settings.language, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
         </div>
       </div>
