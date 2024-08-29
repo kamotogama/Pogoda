@@ -1,7 +1,6 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
 :root {
   --app-height: 100%;
 }
@@ -281,4 +280,215 @@ button, select {
 /* Prevent text size adjustment on orientation change */
 html {
   -webkit-text-size-adjust: 100%;
+}
+
+.bg-sunny {
+  background: linear-gradient(to bottom, #87CEEB, #E0F6FF);
+}
+
+.bg-cloudy {
+  background: linear-gradient(to bottom, #708090, #C0C0C0);
+}
+
+.bg-rainy {
+  background: linear-gradient(to bottom, #4682B4, #778899);
+}
+
+.bg-snowy {
+  background: linear-gradient(to bottom, #B0E0E6, #F0F8FF);
+}
+
+.bg-stormy {
+  background: linear-gradient(to bottom, #2F4F4F, #778899);
+}
+
+.bg-night {
+  background: linear-gradient(to bottom, #191970, #483D8B);
+}
+
+.bg-night-cloudy {
+  background: linear-gradient(to bottom, #2F4F4F, #4B0082);
+}
+
+.bg-night-rainy {
+  background: linear-gradient(to bottom, #191970, #4682B4);
+}
+
+.bg-night-snowy {
+  background: linear-gradient(to bottom, #191970, #B0C4DE);
+}
+
+.bg-default {
+  background: linear-gradient(to bottom, #4B0082, #00CED1);
+}
+
+/* Sunny effect */
+.bg-sunny::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%);
+  animation: rotate 60s linear infinite;
+}
+
+.bg-sunny::after {
+  content: '';
+  position: absolute;
+  top: 10%;
+  left: 10%;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  filter: blur(5px);
+  animation: glare 10s ease-in-out infinite;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes glare {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.5); }
+}
+
+/* Cloudy effect */
+.bg-cloudy::before,
+.bg-night-cloudy::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.2) 0%, transparent 40%),
+    radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.2) 0%, transparent 40%);
+  animation: cloudMove 60s linear infinite;
+}
+
+@keyframes cloudMove {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(50%); }
+}
+
+/* Rainy effect */
+.bg-rainy::before,
+.bg-night-rainy::before {
+  content: '';
+  position: absolute;
+  top: -100px;
+  left: 0;
+  width: 100%;
+  height: calc(100% + 100px);
+  background: repeating-linear-gradient(
+    transparent 0px,
+    transparent 5px,
+    rgba(255, 255, 255, 0.3) 5px,
+    rgba(255, 255, 255, 0.3) 10px
+  );
+  animation: rain 0.5s linear infinite;
+}
+
+@keyframes rain {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(100px); }
+}
+
+/* Snowy effect */
+.bg-snowy::before,
+.bg-night-snowy::before {
+  content: '';
+  position: absolute;
+  top: -100px;
+  left: 0;
+  width: 100%;
+  height: calc(100% + 100px);
+  background-image: 
+    radial-gradient(circle, white 1px, transparent 1px),
+    radial-gradient(circle, white 1px, transparent 1px);
+  background-size: 30px 30px;
+  animation: snow 3s linear infinite;
+}
+
+@keyframes snow {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(100px); }
+}
+
+/* Stormy effect */
+.bg-stormy::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0);
+  animation: lightning 5s infinite;
+}
+
+@keyframes lightning {
+  0%, 100% { background: rgba(255, 255, 255, 0); }
+  50% { background: rgba(255, 255, 255, 0.3); }
+}
+
+/* Night effect */
+.bg-night::before,
+.bg-night-cloudy::before,
+.bg-night-rainy::before,
+.bg-night-snowy::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(circle, white 1px, transparent 1px),
+    radial-gradient(circle, white 1px, transparent 1px);
+  background-size: 100px 100px;
+  opacity: 0.5;
+  animation: twinkle 4s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.8; }
+}
+
+/* Responsive design */
+@media (min-width: 640px) {
+  .text-[10vmin] {
+    font-size: 5rem;
+  }
+  .text-[5vmin] {
+    font-size: 2.5rem;
+  }
+  .text-[7vmin] {
+    font-size: 3.5rem;
+  }
+  .text-[3.5vmin] {
+    font-size: 1.75rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .text-[10vmin] {
+    font-size: 6rem;
+  }
+  .text-[5vmin] {
+    font-size: 3rem;
+  }
+  .text-[7vmin] {
+    font-size: 4rem;
+  }
+  .text-[3.5vmin] {
+    font-size: 2rem;
+  }
 }

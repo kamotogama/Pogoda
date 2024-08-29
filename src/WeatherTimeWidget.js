@@ -108,6 +108,7 @@ const WeatherTimeWidget = () => {
   const [time, setTime] = useState(new Date());
   const [weather, setWeather] = useState({ type: 'sunny', temp: 13, condition: '' });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [news, setNews] = useState([]);
   const [settings, setSettings] = useState(() => {
     const savedSettings = localStorage.getItem('weatherSettings');
     return savedSettings ? JSON.parse(savedSettings) : {
@@ -124,6 +125,7 @@ const WeatherTimeWidget = () => {
       document.body.classList.toggle('dark', isDarkMode);
     }
     const timer = setInterval(() => setTime(new Date()), 1000);
+    fetchNews();
     return () => clearInterval(timer);
   }, []);
 
@@ -131,6 +133,8 @@ const WeatherTimeWidget = () => {
     localStorage.setItem('weatherSettings', JSON.stringify(settings));
     fetchWeather();
   }, [settings]);
+
+
 
 
 
@@ -163,32 +167,45 @@ const WeatherTimeWidget = () => {
       console.error('Error fetching weather data:', error);
     }
   };
+ const fetchNews = async () => {
+    try {
+      const response = await fetch('https://newsapi.org/v2/top-headlines?country=us&apiKey=YOUR_API_KEY');
+      const data = await response.json();
+      setNews(data.articles.slice(0, 3));
+    } catch (error) {
+      console.error('Error fetching news:', error);
+    }
+  };
 
   const WeatherIcon = () => {
-    const iconProps = { size: '15vmin', className: "text-white animate-pulse" };
+    const iconProps = { size: '15vmin', className: "text-white" };
     switch(weather.type) {
       case 'sunny': return <Sun {...iconProps} />;
       case 'cloudy': return <Cloud {...iconProps} />;
       case 'rainy': return <CloudRain {...iconProps} />;
       case 'snowy': return <CloudSnow {...iconProps} />;
       case 'stormy': return <CloudLightning {...iconProps} />;
-      case 'night': return <Moon {...iconProps} />;
       default: return null;
     }
   };
 
   const getBackgroundClass = () => {
+    const hour = time.getHours();
+    const isNight = hour >= 20 || hour < 6;
     switch(weather.type) {
-      case 'sunny': return 'bg-gradient-to-br from-blue-400 via-yellow-300 to-orange-500';
-      case 'cloudy': return 'bg-gradient-to-br from-gray-300 via-gray-400 to-gray-500';
-      case 'rainy': return 'bg-gradient-to-br from-blue-700 via-blue-500 to-gray-400';
-      case 'snowy': return 'bg-gradient-to-br from-blue-100 via-gray-200 to-white';
-      case 'stormy': return 'bg-gradient-to-br from-gray-700 via-purple-600 to-gray-800';
-      case 'night': return 'bg-gradient-to-br from-indigo-900 via-purple-800 to-black';
-      default: return 'bg-gradient-to-br from-blue-500 to-purple-600';
+      case 'sunny': return isNight ? 'bg-night' : 'bg-sunny';
+      case 'cloudy': return isNight ? 'bg-night-cloudy' : 'bg-cloudy';
+      case 'rainy': return isNight ? 'bg-night-rainy' : 'bg-rainy';
+      case 'snowy': return isNight ? 'bg-night-snowy' : 'bg-snowy';
+      case 'stormy': return 'bg-stormy';
+      default: return 'bg-default';
     }
   };
 
+  const DayNightIcon = () => {
+    const hour = time.getHours();
+    return hour >= 20 || hour < 6 ? <Moon size="6vmin" className="text-white mr-2" /> : <Sun size="6vmin" className="text-white mr-2" />;
+  };
   const BackgroundEffect = () => {
     switch(weather.type) {
       case 'sunny':
@@ -244,15 +261,16 @@ const WeatherTimeWidget = () => {
   };
 
   const t = (key) => translations[settings.language][key];
+  
   return (
     <div className={`relative overflow-hidden shadow-lg text-white flex flex-col items-center justify-between transition-all duration-1000 ease-in-out w-full h-full ${getBackgroundClass()}`}>
-      <BackgroundEffect />
-            <button 
+      <button 
         onClick={() => setIsMenuOpen(!isMenuOpen)}
         className="absolute top-4 left-4 z-20 bg-white bg-opacity-20 p-2 rounded-full hover:bg-opacity-30 transition-all duration-300"
       >
         {isMenuOpen ? <X size="6vmin" /> : <Menu size="6vmin" />}
       </button>
+
 
       {isMenuOpen && (
         <div className="absolute inset-0 bg-black bg-opacity-50 z-30 flex items-center justify-center p-4 animate-fadeIn">
@@ -314,8 +332,11 @@ const WeatherTimeWidget = () => {
       )}
 
       <div className="w-full z-10 text-center mt-[5vh] animate-fadeIn">
-        <div className="text-[10vmin] font-light mb-[2vh] animate-pulse">
-          {time.getHours().toString().padStart(2, '0')}:{time.getMinutes().toString().padStart(2, '0')}
+        <div className="flex items-center justify-center mb-[2vh]">
+          <DayNightIcon />
+          <div className="text-[10vmin] font-light animate-pulse">
+            {time.getHours().toString().padStart(2, '0')}:{time.getMinutes().toString().padStart(2, '0')}
+          </div>
         </div>
       </div>
       <div className="flex flex-col items-center z-10 mb-[5vh] animate-fadeIn">
@@ -333,6 +354,15 @@ const WeatherTimeWidget = () => {
           <MapPin size="5vmin" className="mr-2" />
           <span>{settings.city || settings.country || t('autoLocation')}</span>
         </div>
+      </div>
+      <div className="w-full max-w-2xl mx-auto px-4 mb-[5vh] animate-fadeIn">
+        <h2 className="text-[4vmin] font-bold mb-[2vh]">Top News</h2>
+        {news.map((item, index) => (
+          <div key={index} className="mb-[2vh] bg-white bg-opacity-10 p-4 rounded-lg">
+            <h3 className="text-[3vmin] font-semibold">{item.title}</h3>
+            <p className="text-[2.5vmin] mt-2">{item.description}</p>
+          </div>
+        ))}
       </div>
     </div>
   );
