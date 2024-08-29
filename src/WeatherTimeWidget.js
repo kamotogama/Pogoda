@@ -262,7 +262,7 @@ const translations = {
       BR: ['San Paolo', 'Rio de Janeiro', 'Salvador', 'Brasilia', 'Fortaleza', 'Belo Horizonte', 'Manaus', 'Curitiba', 'Recife', 'Porto Alegre'],
       IT: ['Roma', 'Milano', 'Napoli', 'Torino', 'Palermo', 'Genova', 'Bologna', 'Firenze', 'Bari', 'Catania'],
       ES: ['Madrid', 'Barcellona', 'Valencia', 'Siviglia', 'Saragozza', 'Malaga', 'Murcia', 'Palma', 'Las Palmas', 'Bilbao'],
-      NL: ['Amsterdam', 'Rotterdam', 'L'Aia', 'Utrecht', 'Eindhoven', 'Tilburg', 'Groningen', 'Almere', 'Breda', 'Nimega'],
+      NL: ['Amsterdam', 'Rotterdam', 'LAia', 'Utrecht', 'Eindhoven', 'Tilburg', 'Groningen', 'Almere', 'Breda', 'Nimega'],
       SE: ['Stoccolma', 'Göteborg', 'Malmö', 'Uppsala', 'Västerås', 'Örebro', 'Linköping', 'Helsingborg', 'Jönköping', 'Norrköping']
     }
   },
