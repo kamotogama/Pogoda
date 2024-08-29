@@ -528,23 +528,6 @@ const WeatherTimeWidget = () => {
   };
 
 
-  const fetchLocation = async () => {
-    try {
-      const response = await fetch('/api/getLocation');
-      const data = await response.json();
-      setSettings(prev => ({
-        ...prev,
-        country: data.countryCode,
-        city: data.city
-      }));
-    } catch (error) {
-      console.error('Error fetching location:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchLocation();
-  }, []);
 
 
   const WeatherIcon = () => {
