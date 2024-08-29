@@ -466,11 +466,10 @@ const WeatherTimeWidget = () => {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('weatherSettings', JSON.stringify(settings));
-    fetchWeather();
-    fetchNews();
-  }, [settings]);
-
+	  localStorage.setItem('weatherSettings', JSON.stringify(settings));
+	  fetchWeather();
+	  fetchNews();
+	}, [settings]);
 
   const fetchWeather = async () => {
     try {
@@ -500,16 +499,20 @@ const WeatherTimeWidget = () => {
   };
 
   const fetchNews = async () => {
-    try {
-      const response = await fetch(
-        `https://newsapi.org/v2/top-headlines?country=${settings.country || 'us'}&apiKey=c5ff3bc18fc34962a756e1cef5c48f38`
-      );
-      const data = await response.json();
-      setNews(data.articles.slice(0, 5));
-    } catch (error) {
-      console.error('Error fetching news:', error);
-    }
-  };
+	  const API_KEY = '24e885e8c78971ed433b9aadaa2b4cbf'; // Замените на ваш ключ API
+	  const country = settings.country.toLowerCase() || 'us';
+	  const url = `https://gnews.io/api/v4/top-headlines?country=${country}&token=${API_KEY}&lang=${settings.language}`;
+
+	  try {
+		const response = await fetch(url);
+		const data = await response.json();
+		setNews(data.articles.slice(0, 5));
+	  } catch (error) {
+		console.error('Error fetching news:', error);
+	  }
+	};
+
+
   const WeatherIcon = () => {
     const iconProps = { size: '15vmin', className: "text-white weather-icon" };
     switch(weather.type) {
@@ -530,12 +533,12 @@ const WeatherTimeWidget = () => {
 
   const getBackgroundClass = () => {
     switch(weather.type) {
-      case 'sunny': return 'bg-gradient-to-br from-blue-400 via-yellow-300 to-orange-500';
-      case 'cloudy': return 'bg-gradient-to-br from-gray-300 via-gray-400 to-gray-500';
-      case 'rainy': return 'bg-gradient-to-br from-blue-700 via-blue-500 to-gray-400';
-      case 'snowy': return 'bg-gradient-to-br from-blue-100 via-gray-200 to-white';
-      case 'stormy': return 'bg-gradient-to-br from-gray-700 via-purple-600 to-gray-800';
-      default: return 'bg-gradient-to-br from-blue-500 to-purple-600';
+      case 'sunny': return 'bg-sunny';
+      case 'cloudy': return 'bg-cloudy';
+      case 'rainy': return 'bg-rainy';
+      case 'snowy': return 'bg-snowy';
+      case 'stormy': return 'bg-stormy';
+      default: return 'bg-default';
     }
   };
 
@@ -547,8 +550,8 @@ const WeatherTimeWidget = () => {
   };
 
   const t = (key) => translations[settings.language][key];
-
-    return (
+  
+  return (
     <div className={`relative overflow-hidden shadow-lg text-white flex flex-col items-center justify-between transition-all duration-1000 ease-in-out w-full h-full min-h-screen ${getBackgroundClass()}`}>
       <button 
         onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -568,16 +571,9 @@ const WeatherTimeWidget = () => {
                 onChange={(e) => handleSettingChange('language', e.target.value)}
                 className="w-full p-2 border rounded bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="en">English</option>
-                <option value="ru">Русский</option>
-                <option value="es">Español</option>
-                <option value="de">Deutsch</option>
-                <option value="fr">Français</option>
-                <option value="it">Italiano</option>
-                <option value="ja">日本語</option>
-                <option value="zh">中文</option>
-                <option value="nl">Nederlands</option>
-                <option value="sv">Svenska</option>
+                {Object.keys(translations).map((lang) => (
+                  <option key={lang} value={lang}>{translations[lang].language}</option>
+                ))}
               </select>
             </div>
             <div className="mb-4">
