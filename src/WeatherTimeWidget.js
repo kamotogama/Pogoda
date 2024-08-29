@@ -441,7 +441,6 @@ const translations = {
 	  }
 	}
 };
-
 const WeatherTimeWidget = () => {
   const [time, setTime] = useState(new Date());
   const [weather, setWeather] = useState({ type: 'sunny', temp: 13, condition: '' });
@@ -540,54 +539,6 @@ const WeatherTimeWidget = () => {
     }
   };
 
-
-  const BackgroundEffect = () => {
-    switch(weather.type) {
-      case 'sunny':
-        return (
-          <div className="absolute inset-0 overflow-hidden">
-            <div className="sun-rays"></div>
-            <div className="sun-glare"></div>
-          </div>
-        );
-      case 'cloudy':
-        return (
-          <div className="absolute inset-0 overflow-hidden">
-            <div className="cloud cloud1"></div>
-            <div className="cloud cloud2"></div>
-            <div className="cloud cloud3"></div>
-          </div>
-        );
-      case 'rainy':
-        return (
-          <div className="absolute inset-0 overflow-hidden">
-            <div className="rain"></div>
-          </div>
-        );
-      case 'snowy':
-        return (
-          <div className="absolute inset-0 overflow-hidden">
-            <div className="snow"></div>
-          </div>
-        );
-      case 'stormy':
-        return (
-          <div className="absolute inset-0 overflow-hidden">
-            <div className="lightning"></div>
-          </div>
-        );
-      case 'night':
-        return (
-          <div className="absolute inset-0 overflow-hidden">
-            <div className="stars"></div>
-            <div className="twinkling"></div>
-          </div>
-        );
-      default:
-        return null;
-    }
-  };
-
   const handleSettingChange = (setting, value) => {
     setSettings(prev => ({ ...prev, [setting]: value }));
     if (setting === 'country') {
@@ -610,23 +561,17 @@ const WeatherTimeWidget = () => {
         <div className="absolute inset-0 bg-black bg-opacity-50 z-30 flex items-center justify-center p-4 animate-fadeIn">
           <div className="bg-white dark:bg-gray-800 text-black dark:text-white p-4 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto animate-slideIn">
             <h2 className="text-xl sm:text-2xl mb-4 font-bold text-center">{t('settings')}</h2>
-
             <div className="mb-4">
               <label className="block mb-2 font-semibold">{t('language')}</label>
               <select 
-				  value={settings.language} 
-				  onChange={(e) => handleSettingChange('language', e.target.value)}
-				  className="w-full p-2 border rounded bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-				>
-				  <option value="en">English</option>
-				  <option value="ru">Русский</option>
-				  <option value="de">Deutsch</option>
-				  <option value="fr">Français</option>
-				  <option value="es">Español</option>
-				  <option value="it">Italiano</option>
-				  <option value="ja">日本語</option>
-				  <option value="zh">中文</option>
-				</select>
+                value={settings.language} 
+                onChange={(e) => handleSettingChange('language', e.target.value)}
+                className="w-full p-2 border rounded bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {Object.keys(translations).map((lang) => (
+                  <option key={lang} value={lang}>{translations[lang].language}</option>
+                ))}
+              </select>
             </div>
             <div className="mb-4">
               <label className="block mb-2 font-semibold">{t('country')}</label>
@@ -636,8 +581,8 @@ const WeatherTimeWidget = () => {
                 className="w-full p-2 border rounded bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">{t('autoLocation')}</option>
-                {countries.map((country) => (
-                  <option key={country.code} value={country.code}>{country.name}</option>
+                {Object.entries(t('countries')).map(([code, name]) => (
+                  <option key={code} value={code}>{name}</option>
                 ))}
               </select>
             </div>
@@ -650,7 +595,7 @@ const WeatherTimeWidget = () => {
                 disabled={!settings.country}
               >
                 <option value="">{t('autoLocation')}</option>
-                {settings.country && cities[settings.country].map((city) => (
+                {settings.country && t('cities')[settings.country].map((city) => (
                   <option key={city} value={city}>{city}</option>
                 ))}
               </select>
@@ -666,10 +611,13 @@ const WeatherTimeWidget = () => {
       )}
 
       <div className="w-full z-10 text-center mt-8">
+        <DayNightIcon />
         <div className="text-[8vmin] font-light mb-2">
           {time.getHours().toString().padStart(2, '0')}:{time.getMinutes().toString().padStart(2, '0')}
         </div>
-        <DayNightIcon />
+        <div className="text-[4vmin] font-light">
+          {time.toLocaleDateString(settings.language, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+        </div>
       </div>
 
       <div className="flex flex-col items-center z-10 my-8">
@@ -688,15 +636,19 @@ const WeatherTimeWidget = () => {
       </div>
 
       <div className="w-full max-w-2xl mx-auto px-4 mb-8">
-        <h2 className="text-[4vmin] font-bold mb-4">Top News</h2>
-        <ul className="space-y-4">
-          {news.map((item, index) => (
-            <li key={index} className="bg-white bg-opacity-20 p-4 rounded-lg">
-              <h3 className="text-[3vmin] font-semibold">{item.title}</h3>
-              <p className="text-[2.5vmin] mt-2">{item.description}</p>
-            </li>
-          ))}
-        </ul>
+        <h2 className="text-[4vmin] font-bold mb-4">{t('topNews')}</h2>
+        {news.length > 0 ? (
+          <ul className="space-y-4">
+            {news.map((item, index) => (
+              <li key={index} className="bg-white bg-opacity-20 p-4 rounded-lg">
+                <h3 className="text-[3vmin] font-semibold">{item.title}</h3>
+                <p className="text-[2.5vmin] mt-2">{item.description}</p>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-[3vmin]">{t('noNews')}</p>
+        )}
       </div>
     </div>
   );
