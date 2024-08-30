@@ -27,9 +27,6 @@ body {
 .weather-widget {
   min-height: var(--app-height);
   transition: background-color 1s ease;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
 }
 
 /* Weather backgrounds */
@@ -53,16 +50,16 @@ body {
     1px 1px 0 #000;
 }
 
-.neon-glow {
+.blue-neon {
   text-shadow: 
     0 0 5px #fff,
     0 0 10px #fff,
     0 0 15px #fff,
-    0 0 20px #ff00de,
-    0 0 35px #ff00de,
-    0 0 40px #ff00de,
-    0 0 50px #ff00de,
-    0 0 75px #ff00de;
+    0 0 20px #228DFF,
+    0 0 35px #228DFF,
+    0 0 40px #228DFF,
+    0 0 50px #228DFF,
+    0 0 75px #228DFF;
 }
 
 /* Weather icon animations */
@@ -142,28 +139,13 @@ body {
   border-radius: 10px;
   padding: 15px;
   margin-top: 20px;
-  width: 100%;
-  max-width: 400px;
 }
 
 .news-item {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 10px 0;
-  cursor: pointer;
-}
-
-.news-item:last-child {
-  border-bottom: none;
-}
-
-.news-item h3 {
-  font-size: 1.1rem;
-  margin-bottom: 5px;
-}
-
-.news-item p {
-  font-size: 0.9rem;
-  opacity: 0.8;
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 10px;
 }
 
 /* Currency styles */
@@ -173,38 +155,30 @@ body {
   border-radius: 10px;
   padding: 15px;
   margin-top: 20px;
-  width: 100%;
-  max-width: 400px;
 }
 
 .currency-pair {
   display: flex;
   justify-content: space-between;
   margin-bottom: 10px;
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 10px;
+  border-radius: 5px;
 }
 
-/* Modal styles */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modal-content {
+/* Form styles */
+select {
+  color: black;
   background-color: white;
-  padding: 20px;
-  border-radius: 10px;
-  max-width: 500px;
-  width: 90%;
-  max-height: 80vh;
-  overflow-y: auto;
+  padding: 5px;
+  border-radius: 5px;
+  border: none;
+  margin-right: 5px;
+}
+
+.dark select {
+  color: white;
+  background-color: #4a5568;
 }
 
 /* Responsive design */
