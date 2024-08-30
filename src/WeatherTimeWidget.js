@@ -509,31 +509,32 @@ const WeatherTimeWidget = () => {
       console.error('Error fetching weather data:', error);
     }
   };
-
-  const fetchNews = async () => {
+// В fetchNews добавьте проверку, что данные получены
+const fetchNews = async () => {
     try {
-      const response = await fetch(`http://api.mediastack.com/v1/news?access_key=7be80a12ddf4ffe4a3ab21c51fba47a0&countries=${settings.country}&languages=${settings.language}&limit=10`);
-      const data = await response.json();
-      setNews(data.data || []);
+        const response = await fetch(`http://api.mediastack.com/v1/news?access_key=7be80a12ddf4ffe4a3ab21c51fba47a0&countries=${settings.country}&languages=${settings.language}&limit=10`);
+        const data = await response.json();
+        setNews(data.data || []);
     } catch (error) {
-      console.error('Error fetching news:', error);
-      setNews([]);
+        console.error('Error fetching news:', error);
+        setNews([]); // Показать сообщение об ошибке
     }
-  };
+};
 
-  const fetchCurrencies = async () => {
+// В fetchCurrencies добавьте возможность выбора валюты
+const fetchCurrencies = async () => {
     try {
-      const response = await fetch(`https://api.exchangerate-api.com/v4/latest/USD`);
-      const data = await response.json();
-      setCurrencies([
-        { from: 'USD', to: 'EUR', rate: data.rates.EUR },
-        { from: 'USD', to: 'GBP', rate: data.rates.GBP },
-        { from: 'USD', to: 'JPY', rate: data.rates.JPY },
-      ]);
+        const response = await fetch(`https://api.exchangerate-api.com/v4/latest/${selectedCurrency}`);
+        const data = await response.json();
+        setCurrencies([
+            { from: selectedCurrency, to: 'EUR', rate: data.rates.EUR },
+            { from: selectedCurrency, to: 'GBP', rate: data.rates.GBP },
+            { from: selectedCurrency, to: 'JPY', rate: data.rates.JPY },
+        ]);
     } catch (error) {
-      console.error('Error fetching currencies:', error);
+        console.error('Error fetching currencies:', error);
     }
-  };
+};
   const WeatherIcon = () => {
     const iconProps = { size: '15vmin', className: `text-white weather-icon ${weather.type}-icon` };
     switch(weather.type) {
