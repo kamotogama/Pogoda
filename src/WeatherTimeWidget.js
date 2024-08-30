@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Sun, Cloud, CloudRain, CloudSnow, CloudLightning, Moon, Thermometer, Menu, X, MapPin, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Sun, Cloud, CloudRain, CloudSnow, CloudLightning, Moon, Thermometer, Menu, X, MapPin, ChevronRight, ChevronLeft, DollarSign } from 'lucide-react';
 
 const countries = {
   US: 'United States',
@@ -443,12 +443,19 @@ nl: {
 };
 
 
+
 const WeatherTimeWidget = () => {
   const [time, setTime] = useState(new Date());
   const [weather, setWeather] = useState({ type: 'sunny', temp: 13, condition: '' });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [news, setNews] = useState([]);
   const [currentNewsIndex, setCurrentNewsIndex] = useState(0);
+  const [selectedNews, setSelectedNews] = useState(null);
+  const [currencies, setCurrencies] = useState([
+    { from: 'USD', to: 'EUR', rate: 0 },
+    { from: 'USD', to: 'GBP', rate: 0 },
+    { from: 'USD', to: 'JPY', rate: 0 },
+  ]);
   const [settings, setSettings] = useState(() => {
     const savedSettings = localStorage.getItem('weatherSettings');
     return savedSettings ? JSON.parse(savedSettings) : {
@@ -472,24 +479,9 @@ const WeatherTimeWidget = () => {
     localStorage.setItem('weatherSettings', JSON.stringify(settings));
     fetchWeather();
     fetchNews();
+    fetchCurrencies();
   }, [settings]);
-  
-  useEffect(() => {
-    const fetchNews = async () => {
-      try {
-        const response = await fetch('/news.json');
-        const data = await response.json();
-        setNews(data[settings.language] || []);
-      } catch (error) {
-        console.error('Error fetching news:', error);
-      }
-    };
 
-    fetchNews();
-    const newsInterval = setInterval(fetchNews, 5 * 60 * 1000); // Обновляем новости каждые 5 минут
-
-    return () => clearInterval(newsInterval);
-  }, [settings.language]);
 
   const fetchWeather = async () => {
     try {
@@ -519,12 +511,27 @@ const WeatherTimeWidget = () => {
   };
 
   const fetchNews = async () => {
-    // Заглушка для новостей
-    setNews([
-      { title: "Placeholder News 1", description: "This is a placeholder for the first news item." },
-      { title: "Placeholder News 2", description: "This is a placeholder for the second news item." },
-      { title: "Placeholder News 3", description: "This is a placeholder for the third news item." },
-    ]);
+    try {
+      const response = await fetch(`http://api.mediastack.com/v1/news?access_key=7be80a12ddf4ffe4a3ab21c51fba47a0&countries=${settings.country}&languages=${settings.language}&limit=10`);
+      const data = await response.json();
+      setNews(data.data);
+    } catch (error) {
+      console.error('Error fetching news:', error);
+    }
+  };
+
+  const fetchCurrencies = async () => {
+    try {
+      const response = await fetch(`https://api.exchangerate-api.com/v4/latest/USD`);
+      const data = await response.json();
+      setCurrencies([
+        { from: 'USD', to: 'EUR', rate: data.rates.EUR },
+        { from: 'USD', to: 'GBP', rate: data.rates.GBP },
+        { from: 'USD', to: 'JPY', rate: data.rates.JPY },
+      ]);
+    } catch (error) {
+      console.error('Error fetching currencies:', error);
+    }
   };
 
   const WeatherIcon = () => {
@@ -567,47 +574,38 @@ const WeatherTimeWidget = () => {
 
   const t = (key) => translations[settings.language][key];
 
-  const NewsItem = ({ item }) => (
-    <div className="news-item">
+  const NewsItem = ({ item, onClick }) => (
+    <div className="news-item cursor-pointer" onClick={() => onClick(item)}>
       <h3 className="text-[3vmin] font-semibold text-shadow">{item.title}</h3>
-      <p className="text-[2.5vmin] mt-2 text-shadow">{item.description}</p>
+      <p className="text-[2.5vmin] mt-2 text-shadow truncate">{item.description}</p>
     </div>
   );
 
-  const MobileNews = () => (
-    <div className="mt-8 news-container">
-      <h2 className="text-[4vmin] font-bold mb-4 text-shadow">{t('topNews')}</h2>
-      {news.length > 0 ? (
-        <NewsItem item={news[currentNewsIndex]} />
-      ) : (
-        <p className="text-[3vmin] text-shadow">{t('noNews')}</p>
-      )}
-      {news.length > 1 && (
-        <div className="flex justify-between mt-4">
-          <button onClick={() => setCurrentNewsIndex((prev) => (prev === 0 ? news.length - 1 : prev - 1))}>
-            <ChevronLeft size="6vmin" />
-          </button>
-          <button onClick={() => setCurrentNewsIndex((prev) => (prev === news.length - 1 ? 0 : prev + 1))}>
-            <ChevronRight size="6vmin" />
-          </button>
+  const NewsModal = ({ news, onClose }) => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <h2 className="text-2xl font-bold mb-4">{news.title}</h2>
+        <p className="mb-4">{news.description}</p>
+        <a href={news.url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">Read more</a>
+        <button onClick={onClose} className="mt-4 bg-blue-500 text-white px-4 py-2 rounded">Close</button>
+      </div>
+    </div>
+  );
+
+  const CurrencyDisplay = () => (
+    <div className="currency-display mt-4">
+      <h3 className="text-[3vmin] font-semibold text-shadow mb-2">Currency Exchange Rates</h3>
+      {currencies.map((currency, index) => (
+        <div key={index} className="flex items-center justify-between">
+          <span>{currency.from} to {currency.to}:</span>
+          <span>{currency.rate.toFixed(2)}</span>
         </div>
-      )}
+      ))}
     </div>
   );
 
-  const DesktopNews = () => (
-    <div className="news-container absolute left-0 top-0 bottom-0 w-1/3 overflow-y-auto">
-      <h2 className="text-[4vmin] font-bold mb-4 text-shadow">{t('topNews')}</h2>
-      {news.length > 0 ? (
-        news.map((item, index) => <NewsItem key={index} item={item} />)
-      ) : (
-        <p className="text-[3vmin] text-shadow">{t('noNews')}</p>
-      )}
-    </div>
-  );
-  
   return (
-    <div className={`weather-widget relative overflow-hidden shadow-lg text-white flex flex-col items-center justify-between transition-all duration-1000 ease-in-out w-full h-full ${getBackgroundClass()}`}>
+    <div className={`weather-widget relative overflow-hidden shadow-lg text-white flex flex-col items-center justify-between transition-all duration-1000 ease-in-out w-full h-full min-h-screen p-4 ${getBackgroundClass()}`}>
       <button 
         onClick={() => setIsMenuOpen(!isMenuOpen)}
         className="absolute top-4 left-4 z-20 bg-white bg-opacity-20 p-2 rounded-full hover:bg-opacity-30 transition-all duration-300"
@@ -615,58 +613,7 @@ const WeatherTimeWidget = () => {
         {isMenuOpen ? <X size="6vmin" /> : <Menu size="6vmin" />}
       </button>
 
-      {isMenuOpen && (
-        <div className="menu-overlay absolute inset-0 z-30 flex items-center justify-center p-4 animate-fadeIn">
-          <div className="menu-content p-4 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto animate-slideIn">
-            <h2 className="text-xl sm:text-2xl mb-4 font-bold text-center">{t('settings')}</h2>
-            <div className="mb-4">
-              <label className="block mb-2 font-semibold">{t('language')}</label>
-              <select 
-                value={settings.language} 
-                onChange={(e) => handleSettingChange('language', e.target.value)}
-                className="w-full p-2 border rounded bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                {Object.keys(translations).map((lang) => (
-                  <option key={lang} value={lang}>{translations[lang].language}</option>
-                ))}
-              </select>
-            </div>
-            <div className="mb-4">
-              <label className="block mb-2 font-semibold">{t('country')}</label>
-              <select 
-                value={settings.country} 
-                onChange={(e) => handleSettingChange('country', e.target.value)}
-                className="w-full p-2 border rounded bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">{t('autoLocation')}</option>
-                {Object.entries(t('countries')).map(([code, name]) => (
-                  <option key={code} value={code}>{name}</option>
-                ))}
-              </select>
-            </div>
-            <div className="mb-4">
-              <label className="block mb-2 font-semibold">{t('city')}</label>
-              <select 
-                value={settings.city} 
-                onChange={(e) => handleSettingChange('city', e.target.value)}
-                className="w-full p-2 border rounded bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                disabled={!settings.country}
-              >
-                <option value="">{t('autoLocation')}</option>
-                {settings.country && t('cities')[settings.country].map((city) => (
-                  <option key={city} value={city}>{city}</option>
-                ))}
-              </select>
-            </div>
-            <button 
-              onClick={() => setIsMenuOpen(false)}
-              className="w-full bg-blue-500 text-white p-2 rounded font-semibold hover:bg-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-700"
-            >
-              {t('close')}
-            </button>
-          </div>
-        </div>
-      )}
+      {/* ... (оставьте меню настроек без изменений) */}
 
       <div className="w-full z-10 text-center mt-8">
         <div className="flex justify-center items-center space-x-4">
@@ -696,13 +643,30 @@ const WeatherTimeWidget = () => {
         </div>
       </div>
 
-      <div className="hidden md:block">
-        <DesktopNews />
+      <CurrencyDisplay />
+
+      <div className="news-container mt-8 w-full max-w-md">
+        <h2 className="text-[4vmin] font-bold mb-4 text-shadow">{t('topNews')}</h2>
+        {news.length > 0 ? (
+          <>
+            <NewsItem item={news[currentNewsIndex]} onClick={setSelectedNews} />
+            <div className="flex justify-between mt-4">
+              <button onClick={() => setCurrentNewsIndex((prev) => (prev === 0 ? news.length - 1 : prev - 1))}>
+                <ChevronLeft size="6vmin" />
+              </button>
+              <button onClick={() => setCurrentNewsIndex((prev) => (prev === news.length - 1 ? 0 : prev + 1))}>
+                <ChevronRight size="6vmin" />
+              </button>
+            </div>
+          </>
+        ) : (
+          <p className="text-[3vmin] text-shadow">{t('noNews')}</p>
+        )}
       </div>
 
-      <div className="md:hidden">
-        <MobileNews />
-      </div>
+      {selectedNews && (
+        <NewsModal news={selectedNews} onClose={() => setSelectedNews(null)} />
+      )}
     </div>
   );
 };
