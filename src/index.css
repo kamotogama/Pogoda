@@ -25,8 +25,19 @@ body {
 }
 
 .weather-widget {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
   min-height: var(--app-height);
   transition: background-color 1s ease;
+  padding: 1rem;
+}
+
+@media (min-width: 768px) {
+  .weather-widget {
+    grid-template-columns: 1fr 2fr 1fr;
+    padding: 2rem;
+  }
 }
 
 /* Weather backgrounds */
@@ -138,7 +149,8 @@ body {
   backdrop-filter: blur(5px);
   border-radius: 10px;
   padding: 15px;
-  margin-top: 20px;
+  overflow-y: auto;
+  max-height: 80vh;
 }
 
 .news-item {
@@ -154,7 +166,8 @@ body {
   backdrop-filter: blur(5px);
   border-radius: 10px;
   padding: 15px;
-  margin-top: 20px;
+  overflow-y: auto;
+  max-height: 80vh;
 }
 
 .currency-pair {
@@ -164,6 +177,33 @@ body {
   background-color: rgba(255, 255, 255, 0.1);
   padding: 10px;
   border-radius: 5px;
+}
+
+.currency-ticker {
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 0.5rem;
+  border-radius: 5px;
+}
+
+.animate-ticker {
+  display: inline-block;
+  animation: ticker 20s linear infinite;
+}
+
+@keyframes ticker {
+  0% { transform: translate3d(100%, 0, 0); }
+  100% { transform: translate3d(-100%, 0, 0); }
+}
+
+/* Weather and time container */
+.weather-time-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Form styles */
