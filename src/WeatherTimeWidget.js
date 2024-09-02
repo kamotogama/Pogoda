@@ -700,6 +700,7 @@ const fetchCurrencies = async () => {
   }
 
   
+  
   return (
     <div className={`weather-widget ${getBackgroundClass()}`}>
       <button 
