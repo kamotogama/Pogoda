@@ -474,23 +474,23 @@ const CurrencyDisplay = () => {
   }, [baseCurrency]);
 
   return (
-    <div className="currency-display text-white p-4 rounded-lg bg-black bg-opacity-30 backdrop-blur-md">
-      <h2 className="text-[3vmin] font-bold mb-4 text-shadow blue-neon">Курсы валют</h2>
+    <div className="currency-display text-white p-4 rounded-lg bg-black bg-opacity-30 backdrop-blur-md w-full max-w-xs">
+      <h2 className="text-2xl font-bold mb-4 text-shadow blue-neon">Курсы валют</h2>
       <select 
         value={baseCurrency} 
         onChange={(e) => setBaseCurrency(e.target.value)}
-        className="mb-4 bg-transparent border border-white text-white p-2 rounded"
+        className="mb-4 bg-transparent border border-white text-white p-2 rounded w-full"
       >
         {Object.keys(currencies).map(currency => (
           <option key={currency} value={currency}>{currency}</option>
         ))}
       </select>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 gap-2">
         {Object.entries(currencies).map(([currency, rate]) => (
           currency !== baseCurrency && (
-            <div key={currency} className="currency-pair flex justify-between">
-              <span className="text-[2.5vmin] blue-neon">{currency}</span>
-              <span className="text-[2.5vmin] blue-neon">{(1 / rate).toFixed(4)}</span>
+            <div key={currency} className="currency-pair flex justify-between items-center bg-white bg-opacity-10 p-2 rounded">
+              <span className="text-xl blue-neon">{currency}</span>
+              <span className="text-xl blue-neon">{(1 / rate).toFixed(4)}</span>
             </div>
           )
         ))}
@@ -498,6 +498,7 @@ const CurrencyDisplay = () => {
     </div>
   );
 };
+
 
 const WeatherTimeWidget = () => {
   const [time, setTime] = useState(new Date());
@@ -562,7 +563,7 @@ const WeatherTimeWidget = () => {
     try {
       const country = settings.country || 'us';
       const language = settings.language || 'en';
-      const response = await fetch(`http://api.mediastack.com/v1/news?access_key=7be80a12ddf4ffe4a3ab21c51fba47a0&countries=${country}&languages=${language}&limit=10`);
+      const response = await fetch(`https://api.mediastack.com/v1/news?access_key=7be80a12ddf4ffe4a3ab21c51fba47a0&countries=${country}&languages=${language}&limit=10`);
       const data = await response.json();
       if (data.data && data.data.length > 0) {
         setNews(data.data);
@@ -646,6 +647,7 @@ const WeatherTimeWidget = () => {
       </div>
     </div>
   );
+
   return (
     <div className={`weather-widget relative overflow-hidden shadow-lg text-white flex flex-col md:flex-row items-stretch justify-between transition-all duration-1000 ease-in-out w-full h-full min-h-screen p-4 ${getBackgroundClass()}`}>
       <button 
@@ -709,54 +711,55 @@ const WeatherTimeWidget = () => {
         </div>
       )}
 
-      <div className="w-full md:w-1/4 order-1 md:order-1 flex items-center justify-center">
+      <div className="w-full md:w-1/4 order-1 md:order-1 flex items-center justify-center p-4">
         <CurrencyDisplay />
       </div>
 
-      <div className="w-full md:w-2/4 flex flex-col items-center justify-start order-2 md:order-2 mt-8">
+      <div className="w-full md:w-2/4 flex flex-col items-center justify-center order-2 md:order-2">
         <div className="mb-8">
           <div className="flex justify-center items-center space-x-4">
             <DayNightIcon />
-            <div className="text-[8vmin] font-light text-shadow blue-neon">
+            <div className="text-6xl md:text-8xl font-light text-shadow blue-neon">
               {time.getHours().toString().padStart(2, '0')}:{time.getMinutes().toString().padStart(2, '0')}
             </div>
             <DayNightIcon />
           </div>
-          <div className="text-[3vmin] mt-2 text-shadow blue-neon text-center">
+          <div className="text-xl md:text-2xl mt-2 text-shadow blue-neon text-center">
             {time.toLocaleDateString(settings.language, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
           </div>
         </div>
 
         <WeatherIcon />
-        <div className="text-[5vmin] capitalize font-light mt-4 text-center text-shadow blue-neon">
+        <div className="text-3xl md:text-4xl capitalize font-light mt-4 text-center text-shadow blue-neon">
           {weather.condition}
         </div>
         <div className="flex items-center mt-2">
-          <Thermometer className="text-white mr-2 blue-neon" size="7vmin" />
-          <span className="text-[7vmin] font-light text-shadow blue-neon">{weather.temp}°C</span>
+          <Thermometer className="text-white mr-2 blue-neon" size={36} />
+          <span className="text-4xl md:text-5xl font-light text-shadow blue-neon">{weather.temp}°C</span>
         </div>
-        <div className="mt-4 flex items-center text-[3.5vmin] text-shadow blue-neon">
-          <MapPin size="5vmin" className="mr-2" />
+        <div className="mt-4 flex items-center text-xl md:text-2xl text-shadow blue-neon">
+          <MapPin size={24} className="mr-2" />
           <span>{settings.city || settings.country || t('autoLocation')}</span>
         </div>
       </div>
-      <div className="w-full md:w-1/4 order-3 md:order-3 flex items-center justify-center">
-        <div className="news-container mt-8 w-full max-w-md bg-black bg-opacity-30 backdrop-blur-md p-4 rounded-lg">
-          <h2 className="text-[3vmin] font-bold mb-4 text-shadow blue-neon">{t('topNews')}</h2>
+
+      <div className="w-full md:w-1/4 order-3 md:order-3 flex items-center justify-center p-4">
+        <div className="news-container w-full max-w-md bg-black bg-opacity-30 backdrop-blur-md p-4 rounded-lg">
+          <h2 className="text-2xl font-bold mb-4 text-shadow blue-neon">{t('topNews')}</h2>
           {news.length > 0 ? (
             <>
               <NewsItem item={news[currentNewsIndex]} onClick={setSelectedNews} />
               <div className="flex justify-between mt-4">
                 <button onClick={() => setCurrentNewsIndex((prev) => (prev === 0 ? news.length - 1 : prev - 1))}>
-                  <ChevronLeft size="6vmin" className="blue-neon" />
+                  <ChevronLeft size={24} className="blue-neon" />
                 </button>
                 <button onClick={() => setCurrentNewsIndex((prev) => (prev === news.length - 1 ? 0 : prev + 1))}>
-                  <ChevronRight size="6vmin" className="blue-neon" />
+                  <ChevronRight size={24} className="blue-neon" />
                 </button>
               </div>
             </>
           ) : (
-            <p className="text-[2.5vmin] text-shadow blue-neon">Загрузка новостей...</p>
+            <p className="text-xl text-shadow blue-neon">Загрузка новостей...</p>
           )}
         </div>
       </div>
