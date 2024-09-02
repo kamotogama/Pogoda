@@ -563,7 +563,7 @@ const fetchWithRetry = async (url, options = {}, retries = 3) => {
 const fetchWeather = async () => {
   const location = settings.city || settings.country || 'auto:ip';
   const data = await fetchWithRetry(
-    `https://api.weatherapi.com/v1/current.json?key=YOUR_WEATHER_API_KEY&q=${location}&aqi=no&lang=${settings.language}`
+    `https://api.weatherapi.com/v1/current.json?key=4fe8d41b43ea4f1fbe2103447242608&q=${location}&aqi=no&lang=${settings.language}`
   );
   
   const conditionCode = data.current.condition.code;
@@ -583,11 +583,21 @@ const fetchWeather = async () => {
 };
 
 const fetchNews = async () => {
-  const data = await fetchWithRetry(`https://gnews.io/api/v4/top-headlines?country=${settings.country || 'us'}&lang=${settings.language}&token=YOUR_GNEWS_API_KEY`);
-  if (data.articles && data.articles.length > 0) {
-    setNews(data.articles);
-  } else {
-    setNews([{ title: 'Новости не найдены', description: 'Попробуйте изменить настройки страны или языка.' }]);
+  try {
+    const country = settings.country || 'us';
+    const language = settings.language || 'en';
+    const url = `http://api.mediastack.com/v1/news?access_key=7be80a12ddf4ffe4a3ab21c51fba47a0&countries=${country}&languages=${language}&limit=10`;
+    
+    const data = await fetchWithRetry(url);
+    
+    if (data.data && data.data.length > 0) {
+      setNews(data.data);
+    } else {
+      setNews([{ title: 'Новости не найдены', description: 'Попробуйте изменить настройки страны или языка.' }]);
+    }
+  } catch (error) {
+    console.error('Error fetching news:', error);
+    throw new Error('News data unavailable');
   }
 };
 
@@ -651,22 +661,25 @@ const fetchCurrencies = async () => {
   const t = (key) => translations[settings.language][key];
 
   const NewsItem = ({ item, onClick }) => (
-    <div className="news-item cursor-pointer mb-4" onClick={() => onClick(item)}>
-      <h3 className="text-xl font-semibold text-shadow blue-neon">{item.title}</h3>
-      <p className="text-sm mt-2 text-shadow truncate">{item.description}</p>
-    </div>
-  );
+  <div className="news-item cursor-pointer mb-4" onClick={() => onClick(item)}>
+    <h3 className="text-xl font-semibold text-shadow blue-neon">{item.title}</h3>
+    <p className="text-sm mt-2 text-shadow truncate">{item.description}</p>
+    <p className="text-xs mt-1 text-shadow">{item.source} - {new Date(item.published_at).toLocaleDateString()}</p>
+  </div>
+);
 
   const NewsModal = ({ news, onClose }) => (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <h2 className="text-2xl font-bold mb-4 blue-neon">{news.title}</h2>
-        <p className="mb-4">{news.description}</p>
-        <a href={news.url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline blue-neon">Read more</a>
-        <button onClick={onClose} className="mt-4 bg-blue-500 text-white px-4 py-2 rounded blue-neon">Close</button>
-      </div>
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <h2 className="text-2xl font-bold mb-4 blue-neon">{news.title}</h2>
+      <p className="mb-4">{news.description}</p>
+      <p className="text-sm mb-2">Source: {news.source}</p>
+      <p className="text-sm mb-4">Published: {new Date(news.published_at).toLocaleString()}</p>
+      <a href={news.url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline blue-neon">Read more</a>
+      <button onClick={onClose} className="mt-4 bg-blue-500 text-white px-4 py-2 rounded blue-neon">Close</button>
     </div>
-  );
+  </div>
+);
 
   const CurrencyTicker = () => {
     const mainCurrencies = ['USD', 'EUR', 'GBP', 'JPY', 'CNY'].filter(cur => cur !== settings.currency);
