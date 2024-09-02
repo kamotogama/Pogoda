@@ -441,24 +441,29 @@ nl: {
 	}
 
 };
-
-// Компонент CurrencyDisplay
 const CurrencyDisplay = () => {
+  const [baseCurrency, setBaseCurrency] = useState('USD');
   const [currencies, setCurrencies] = useState({
-    USD: 0,
+    USD: 1,
     EUR: 0,
-    GBP: 0
+    GBP: 0,
+    JPY: 0,
+    CNY: 0,
+    RUB: 0
   });
 
   useEffect(() => {
     const fetchCurrencies = async () => {
       try {
-        const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+        const response = await fetch(`https://api.exchangerate-api.com/v4/latest/${baseCurrency}`);
         const data = await response.json();
         setCurrencies({
-          USD: 1,
+          USD: data.rates.USD,
           EUR: data.rates.EUR,
-          GBP: data.rates.GBP
+          GBP: data.rates.GBP,
+          JPY: data.rates.JPY,
+          CNY: data.rates.CNY,
+          RUB: data.rates.RUB
         });
       } catch (error) {
         console.error('Error fetching currency data:', error);
@@ -466,17 +471,30 @@ const CurrencyDisplay = () => {
     };
 
     fetchCurrencies();
-  }, []);
+  }, [baseCurrency]);
 
   return (
-    <div className="currency-display text-white p-4 rounded-lg">
-      <h2 className="text-[4vmin] font-bold mb-4 text-shadow blue-neon">Курсы валют</h2>
-      {Object.entries(currencies).map(([currency, rate]) => (
-        <div key={currency} className="currency-pair">
-          <span className="text-[3vmin] blue-neon">{currency}</span>
-          <span className="text-[3vmin] blue-neon">{rate.toFixed(2)}</span>
-        </div>
-      ))}
+    <div className="currency-display text-white p-4 rounded-lg bg-black bg-opacity-30 backdrop-blur-md">
+      <h2 className="text-[3vmin] font-bold mb-4 text-shadow blue-neon">Курсы валют</h2>
+      <select 
+        value={baseCurrency} 
+        onChange={(e) => setBaseCurrency(e.target.value)}
+        className="mb-4 bg-transparent border border-white text-white p-2 rounded"
+      >
+        {Object.keys(currencies).map(currency => (
+          <option key={currency} value={currency}>{currency}</option>
+        ))}
+      </select>
+      <div className="grid grid-cols-2 gap-2">
+        {Object.entries(currencies).map(([currency, rate]) => (
+          currency !== baseCurrency && (
+            <div key={currency} className="currency-pair flex justify-between">
+              <span className="text-[2.5vmin] blue-neon">{currency}</span>
+              <span className="text-[2.5vmin] blue-neon">{(1 / rate).toFixed(4)}</span>
+            </div>
+          )
+        ))}
+      </div>
     </div>
   );
 };
@@ -513,7 +531,6 @@ const WeatherTimeWidget = () => {
     fetchNews();
   }, [settings]);
 
-
   const fetchWeather = async () => {
     try {
       const location = settings.city || settings.country || 'auto:ip';
@@ -543,12 +560,18 @@ const WeatherTimeWidget = () => {
 
   const fetchNews = async () => {
     try {
-      const response = await fetch(`http://api.mediastack.com/v1/news?access_key=7be80a12ddf4ffe4a3ab21c51fba47a0&countries=${settings.country}&languages=${settings.language}&limit=10`);
+      const country = settings.country || 'us';
+      const language = settings.language || 'en';
+      const response = await fetch(`http://api.mediastack.com/v1/news?access_key=7be80a12ddf4ffe4a3ab21c51fba47a0&countries=${country}&languages=${language}&limit=10`);
       const data = await response.json();
-      setNews(data.data || []);
+      if (data.data && data.data.length > 0) {
+        setNews(data.data);
+      } else {
+        setNews([{ title: 'Новости не найдены', description: 'Попробуйте изменить настройки страны или языка.' }]);
+      }
     } catch (error) {
       console.error('Error fetching news:', error);
-      setNews([]);
+      setNews([{ title: 'Ошибка загрузки новостей', description: 'Пожалуйста, попробуйте позже.' }]);
     }
   };
 
@@ -573,14 +596,28 @@ const WeatherTimeWidget = () => {
   const getBackgroundClass = () => {
     const hour = time.getHours();
     const isNight = hour < 6 || hour >= 18;
+    
+    let bgClass = '';
     switch(weather.type) {
-      case 'sunny': return isNight ? 'bg-night' : 'bg-sunny';
-      case 'cloudy': return isNight ? 'bg-night' : 'bg-cloudy';
-      case 'rainy': return isNight ? 'bg-night' : 'bg-rainy';
-      case 'snowy': return isNight ? 'bg-night' : 'bg-snowy';
-      case 'stormy': return 'bg-stormy';
-      default: return 'bg-default';
+      case 'sunny':
+        bgClass = isNight ? 'bg-gradient-to-b from-indigo-900 via-purple-900 to-pink-700' : 'bg-gradient-to-b from-yellow-300 via-orange-300 to-red-400';
+        break;
+      case 'cloudy':
+        bgClass = isNight ? 'bg-gradient-to-b from-gray-900 via-blue-900 to-gray-800' : 'bg-gradient-to-b from-blue-300 via-gray-300 to-blue-400';
+        break;
+      case 'rainy':
+        bgClass = isNight ? 'bg-gradient-to-b from-gray-900 via-blue-900 to-indigo-900' : 'bg-gradient-to-b from-blue-400 via-gray-500 to-blue-600';
+        break;
+      case 'snowy':
+        bgClass = isNight ? 'bg-gradient-to-b from-gray-800 via-blue-900 to-indigo-900' : 'bg-gradient-to-b from-blue-100 via-blue-200 to-blue-300';
+        break;
+      case 'stormy':
+        bgClass = 'bg-gradient-to-b from-gray-900 via-purple-900 to-gray-800';
+        break;
+      default:
+        bgClass = 'bg-gradient-to-b from-blue-500 to-blue-700';
     }
+    return bgClass;
   };
 
   const handleSettingChange = (setting, value) => {
@@ -594,8 +631,8 @@ const WeatherTimeWidget = () => {
 
   const NewsItem = ({ item, onClick }) => (
     <div className="news-item cursor-pointer" onClick={() => onClick(item)}>
-      <h3 className="text-[3vmin] font-semibold text-shadow blue-neon">{item.title}</h3>
-      <p className="text-[2.5vmin] mt-2 text-shadow truncate">{item.description}</p>
+      <h3 className="text-[2.5vmin] font-semibold text-shadow blue-neon">{item.title}</h3>
+      <p className="text-[2vmin] mt-2 text-shadow truncate">{item.description}</p>
     </div>
   );
 
@@ -627,6 +664,7 @@ const WeatherTimeWidget = () => {
             >
               <X size="24" />
             </button>
+
             <h2 className="text-xl sm:text-2xl mb-4 font-bold text-center blue-neon">{t('settings')}</h2>
             <div className="mb-4">
               <label className="block mb-2 font-semibold blue-neon">{t('language')}</label>
@@ -702,10 +740,9 @@ const WeatherTimeWidget = () => {
           <span>{settings.city || settings.country || t('autoLocation')}</span>
         </div>
       </div>
-
       <div className="w-full md:w-1/4 order-3 md:order-3 flex items-center justify-center">
-        <div className="news-container mt-8 w-full max-w-md">
-          <h2 className="text-[4vmin] font-bold mb-4 text-shadow blue-neon">{t('topNews')}</h2>
+        <div className="news-container mt-8 w-full max-w-md bg-black bg-opacity-30 backdrop-blur-md p-4 rounded-lg">
+          <h2 className="text-[3vmin] font-bold mb-4 text-shadow blue-neon">{t('topNews')}</h2>
           {news.length > 0 ? (
             <>
               <NewsItem item={news[currentNewsIndex]} onClick={setSelectedNews} />
@@ -719,7 +756,7 @@ const WeatherTimeWidget = () => {
               </div>
             </>
           ) : (
-            <p className="text-[3vmin] text-shadow blue-neon">Загрузка новостей...</p>
+            <p className="text-[2.5vmin] text-shadow blue-neon">Загрузка новостей...</p>
           )}
         </div>
       </div>
