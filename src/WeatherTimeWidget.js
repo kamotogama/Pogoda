@@ -700,158 +700,132 @@ const fetchCurrencies = async () => {
   }
 
   return (
-    <div className={`weather-widget relative overflow-hidden shadow-lg text-white flex flex-col md:flex-row items-stretch justify-between transition-all duration-1000 ease-in-out w-full h-full min-h-screen p-4 ${getBackgroundClass()}`}>
-      <button 
-        onClick={() => setIsMenuOpen(!isMenuOpen)}
-        className="absolute top-4 left-4 z-20 bg-white bg-opacity-20 p-2 rounded-full hover:bg-opacity-30 transition-all duration-300"
-      >
-        {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-      </button>
+  <div className={`weather-widget ${getBackgroundClass()}`}>
+    <button 
+      onClick={() => setIsMenuOpen(!isMenuOpen)}
+      className="absolute top-4 left-4 z-20 bg-white bg-opacity-20 p-2 rounded-full hover:bg-opacity-30 transition-all duration-300"
+    >
+      {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+    </button>
 
-      {isMenuOpen && (
-        <div className="menu-overlay absolute inset-0 z-30 flex items-center justify-center p-4">
-          <div className="menu-content p-4 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto relative bg-white bg-opacity-90 dark:bg-gray-800 dark:bg-opacity-90">
-            <button 
-              onClick={() => setIsMenuOpen(false)}
-              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+    {isMenuOpen && (
+      <div className="menu-overlay absolute inset-0 z-30 flex items-center justify-center p-4">
+        <div className="menu-content p-4 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto relative bg-white bg-opacity-90 dark:bg-gray-800 dark:bg-opacity-90">
+          <button 
+            onClick={() => setIsMenuOpen(false)}
+            className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+          >
+            <X size={24} />
+          </button>
+
+          <h2 className="text-2xl mb-4 font-bold text-center text-gray-800 dark:text-white">{t('settings')}</h2>
+          <div className="mb-4">
+            <label className="block mb-2 font-semibold text-gray-800 dark:text-white">{t('language')}</label>
+            <select 
+              value={settings.language} 
+              onChange={(e) => handleSettingChange('language', e.target.value)}
+              className="w-full p-2 border rounded bg-gray-100 text-black dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <X size={24} />
+              {Object.keys(translations).map((lang) => (
+                <option key={lang} value={lang}>{translations[lang].language}</option>
+              ))}
+            </select>
+          </div>
+          <div className="mb-4">
+            <label className="block mb-2 font-semibold text-gray-800 dark:text-white">{t('country')}</label>
+            <select 
+              value={settings.country} 
+              onChange={(e) => handleSettingChange('country', e.target.value)}
+              className="w-full p-2 border rounded bg-gray-100 text-black dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">{t('autoLocation')}</option>
+              {Object.entries(t('countries')).map(([code, name]) => (
+                <option key={code} value={code}>{name}</option>
+              ))}
+            </select>
+          </div>
+          <div className="mb-4">
+            <label className="block mb-2 font-semibold text-gray-800 dark:text-white">{t('city')}</label>
+            <select 
+              value={settings.city} 
+              onChange={(e) => handleSettingChange('city', e.target.value)}
+              className="w-full p-2 border rounded bg-gray-100 text-black dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={!settings.country}
+            >
+              <option value="">{t('autoLocation')}</option>
+              {settings.country && t('cities')[settings.country].map((city) => (
+                <option key={city} value={city}>{city}</option>
+              ))}
+            </select>
+          </div>
+          <div className="mb-4">
+            <label className="block mb-2 font-semibold text-gray-800 dark:text-white">{t('currency')}</label>
+            <select 
+              value={settings.currency} 
+              onChange={(e) => handleSettingChange('currency', e.target.value)}
+              className="w-full p-2 border rounded bg-gray-100 text-black dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {['USD', 'EUR', 'GBP', 'JPY', 'CNY', 'RUB'].map((cur) => (
+                <option key={cur} value={cur}>{cur}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
+    )}
+
+    <div className="news-container">
+      <h2 className="text-2xl font-bold mb-4 text-shadow blue-neon">{t('topNews')}</h2>
+      {news.length > 0 ? (
+        <>
+          <NewsItem item={news[currentNewsIndex]} onClick={setSelectedNews} />
+          <div className="flex justify-between mt-4">
+            <button onClick={() => setCurrentNewsIndex((prev) => (prev === 0 ? news.length - 1 : prev - 1))}>
+              <ChevronLeft size={24} className="blue-neon" />
             </button>
-
-            <h2 className="text-2xl mb-4 font-bold text-center text-gray-800 dark:text-white">{t('settings')}</h2>
-            <div className="mb-4">
-              <label className="block mb-2 font-semibold text-gray-800 dark:text-white">{t('language')}</label>
-              <select 
-                value={settings.language} 
-                onChange={(e) => handleSettingChange('language', e.target.value)}
-                className="w-full p-2 border rounded bg-gray-100 text-black dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                {Object.keys(translations).map((lang) => (
-                  <option key={lang} value={lang}>{translations[lang].language}</option>
-                ))}
-              </select>
-            </div>
-            <div className="mb-4">
-              <label className="block mb-2 font-semibold text-gray-800 dark:text-white">{t('country')}</label>
-              <select 
-                value={settings.country} 
-                onChange={(e) => handleSettingChange('country', e.target.value)}
-                className="w-full p-2 border rounded bg-gray-100 text-black dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">{t('autoLocation')}</option>
-                {Object.entries(t('countries')).map(([code, name]) => (
-                  <option key={code} value={code}>{name}</option>
-                ))}
-              </select>
-            </div>
-            <div className="mb-4">
-              <label className="block mb-2 font-semibold text-gray-800 dark:text-white">{t('city')}</label>
-              <select 
-                value={settings.city} 
-                onChange={(e) => handleSettingChange('city', e.target.value)}
-                className="w-full p-2 border rounded bg-gray-100 text-black dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                disabled={!settings.country}
-              >
-                <option value="">{t('autoLocation')}</option>
-                {settings.country && t('cities')[settings.country].map((city) => (
-                  <option key={city} value={city}>{city}</option>
-                ))}
-              </select>
-            </div>
-            <div className="mb-4">
-              <label className="block mb-2 font-semibold text-gray-800 dark:text-white">{t('currency')}</label>
-              <select 
-                value={settings.currency} 
-                onChange={(e) => handleSettingChange('currency', e.target.value)}
-                className="w-full p-2 border rounded bg-gray-100 text-black dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                {['USD', 'EUR', 'GBP', 'JPY', 'CNY', 'RUB'].map((cur) => (
-                  <option key={cur} value={cur}>{cur}</option>
-                ))}
-              </select>
-            </div>
+            <button onClick={() => setCurrentNewsIndex((prev) => (prev === news.length - 1 ? 0 : prev + 1))}>
+              <ChevronRight size={24} className="blue-neon" />
+            </button>
           </div>
-        </div>
-      )}
-
-      <div className="w-full md:w-1/4 order-1 md:order-1 flex flex-col items-center justify-start p-4">
-        <div className="news-container w-full max-w-md bg-black bg-opacity-30 backdrop-blur-md p-4 rounded-lg overflow-y-auto" style={{maxHeight: '80vh'}}>
-          <h2 className="text-2xl font-bold mb-4 text-shadow blue-neon">{t('topNews')}</h2>
-          {news.length > 0 ? (
-            <>
-              <NewsItem item={news[currentNewsIndex]} onClick={setSelectedNews} />
-              <div className="flex justify-between mt-4">
-                <button onClick={() => setCurrentNewsIndex((prev) => (prev === 0 ? news.length - 1 : prev - 1))}>
-                  <ChevronLeft size={24} className="blue-neon" />
-                </button>
-                <button onClick={() => setCurrentNewsIndex((prev) => (prev === news.length - 1 ? 0 : prev + 1))}>
-                  <ChevronRight size={24} className="blue-neon" />
-                </button>
-              </div>
-            </>
-          ) : (
-            <p className="text-xl text-shadow blue-neon">Загрузка новостей...</p>
-          )}
-        </div>
-      </div>
-
-      <div className="w-full md:w-2/4 flex flex-col items-center justify-center order-2 md:order-2">
-        <CurrencyTicker />
-        <div className="mb-8">
-          <div className="flex justify-center items-center space-x-4">
-            <DayNightIcon />
-            <div className="text-6xl md:text-8xl font-light text-shadow blue-neon">
-              {time.getHours().toString().padStart(2, '0')}:{time.getMinutes().toString().padStart(2, '0')}
-            </div>
-            <DayNightIcon />
-          </div>
-          <div className="text-xl md:text-2xl mt-2 text-shadow blue-neon text-center">
-            {time.toLocaleDateString(settings.language, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-          </div>
-        </div>
-
-        <WeatherIcon />
-        <div className="text-3xl md:text-4xl capitalize font-light mt-4 text-center text-shadow blue-neon">
-          {weather.condition}
-        </div>
-        <div className="flex items-center mt-2">
-          <Thermometer className="text-white mr-2 blue-neon" size={36} />
-          <span className="text-4xl md:text-5xl font-light text-shadow blue-neon">{weather.temp}°C</span>
-        </div>
-        <div className="mt-4 flex items-center text-xl md:text-2xl text-shadow blue-neon">
-          <MapPin size={24} className="mr-2" />
-          <span>{settings.city || settings.country || t('autoLocation')}</span>
-        </div>
-      </div>
-
-      <div className="w-full md:w-1/4 order-3 md:order-3 flex items-center justify-center p-4">
-        <div className="news-container w-full max-w-md bg-black bg-opacity-30 backdrop-blur-md p-4 rounded-lg">
-          <h2 className="text-2xl font-bold mb-4 text-shadow blue-neon">{t('topNews')}</h2>
-          {news.length > 0 ? (
-            <>
-              <NewsItem item={news[currentNewsIndex]} onClick={setSelectedNews} />
-              <div className="flex justify-between mt-4">
-                <button onClick={() => setCurrentNewsIndex((prev) => (prev === 0 ? news.length - 1 : prev - 1))}>
-                  <ChevronLeft size={24} className="blue-neon" />
-                </button>
-                <button onClick={() => setCurrentNewsIndex((prev) => (prev === news.length - 1 ? 0 : prev + 1))}>
-                  <ChevronRight size={24} className="blue-neon" />
-                </button>
-              </div>
-            </>
-          ) : (
-            <p className="text-xl text-shadow blue-neon">Загрузка новостей...</p>
-          )}
-        </div>
-      </div>
-
-
-      
-      {selectedNews && (
-        <NewsModal news={selectedNews} onClose={() => setSelectedNews(null)} />
+        </>
+      ) : (
+        <p className="text-xl text-shadow blue-neon">Загрузка новостей...</p>
       )}
     </div>
-  );
-};
 
-export default WeatherTimeWidget;
+    <div className="weather-time-container">
+      <CurrencyTicker />
+      <div className="mb-8">
+        <div className="flex justify-center items-center space-x-4">
+          <DayNightIcon />
+          <div className="text-6xl md:text-8xl font-light text-shadow blue-neon">
+            {time.getHours().toString().padStart(2, '0')}:{time.getMinutes().toString().padStart(2, '0')}
+          </div>
+          <DayNightIcon />
+        </div>
+        <div className="text-xl md:text-2xl mt-2 text-shadow blue-neon text-center">
+          {time.toLocaleDateString(settings.language, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+        </div>
+      </div>
+
+      <WeatherIcon />
+      <div className="text-3xl md:text-4xl capitalize font-light mt-4 text-center text-shadow blue-neon">
+        {weather.condition}
+      </div>
+      <div className="flex items-center mt-2">
+        <Thermometer className="text-white mr-2 blue-neon" size={36} />
+        <span className="text-4xl md:text-5xl font-light text-shadow blue-neon">{weather.temp}°C</span>
+      </div>
+      <div className="mt-4 flex items-center text-xl md:text-2xl text-shadow blue-neon">
+        <MapPin size={24} className="mr-2" />
+        <span>{settings.city || settings.country || t('autoLocation')}</span>
+      </div>
+    </div>
+
+    <CurrencyDisplay />
+
+    {selectedNews && (
+      <NewsModal news={selectedNews} onClose={() => setSelectedNews(null)} />
+    )}
+  </div>
+);
