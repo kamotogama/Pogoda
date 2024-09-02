@@ -500,6 +500,7 @@ const CurrencyDisplay = () => {
 };
 
 
+
 const WeatherTimeWidget = () => {
   const [time, setTime] = useState(new Date());
   const [weather, setWeather] = useState({ type: 'sunny', temp: 13, condition: '' });
@@ -513,8 +514,10 @@ const WeatherTimeWidget = () => {
       language: 'en',
       country: '',
       city: '',
+      currency: 'USD'
     };
   });
+  const [currencies, setCurrencies] = useState({});
 
   useEffect(() => {
     if (window.Telegram && window.Telegram.WebApp) {
@@ -530,6 +533,7 @@ const WeatherTimeWidget = () => {
     localStorage.setItem('weatherSettings', JSON.stringify(settings));
     fetchWeather();
     fetchNews();
+    fetchCurrencies();
   }, [settings]);
 
   const fetchWeather = async () => {
@@ -561,12 +565,10 @@ const WeatherTimeWidget = () => {
 
   const fetchNews = async () => {
     try {
-      const country = settings.country || 'us';
-      const language = settings.language || 'en';
-      const response = await fetch(`https://api.mediastack.com/v1/news?access_key=7be80a12ddf4ffe4a3ab21c51fba47a0&countries=${country}&languages=${language}&limit=10`);
+      const response = await fetch(`https://newsapi.org/v2/top-headlines?country=${settings.country || 'us'}&apiKey=YOUR_NEWS_API_KEY`);
       const data = await response.json();
-      if (data.data && data.data.length > 0) {
-        setNews(data.data);
+      if (data.articles && data.articles.length > 0) {
+        setNews(data.articles);
       } else {
         setNews([{ title: 'Новости не найдены', description: 'Попробуйте изменить настройки страны или языка.' }]);
       }
@@ -576,8 +578,18 @@ const WeatherTimeWidget = () => {
     }
   };
 
+  const fetchCurrencies = async () => {
+    try {
+      const response = await fetch(`https://api.exchangerate-api.com/v4/latest/${settings.currency}`);
+      const data = await response.json();
+      setCurrencies(data.rates);
+    } catch (error) {
+      console.error('Error fetching currency data:', error);
+    }
+  };
+
   const WeatherIcon = () => {
-    const iconProps = { size: '15vmin', className: `text-white weather-icon ${weather.type}-icon` };
+    const iconProps = { size: 64, className: `text-white weather-icon ${weather.type}-icon` };
     switch(weather.type) {
       case 'sunny': return <Sun {...iconProps} />;
       case 'cloudy': return <Cloud {...iconProps} />;
@@ -590,7 +602,7 @@ const WeatherTimeWidget = () => {
 
   const DayNightIcon = () => {
     const hour = time.getHours();
-    const iconProps = { size: '4vmin', className: "text-white opacity-80" };
+    const iconProps = { size: 24, className: "text-white opacity-80" };
     return (hour >= 6 && hour < 18) ? <Sun {...iconProps} /> : <Moon {...iconProps} />;
   };
 
@@ -631,9 +643,9 @@ const WeatherTimeWidget = () => {
   const t = (key) => translations[settings.language][key];
 
   const NewsItem = ({ item, onClick }) => (
-    <div className="news-item cursor-pointer" onClick={() => onClick(item)}>
-      <h3 className="text-[2.5vmin] font-semibold text-shadow blue-neon">{item.title}</h3>
-      <p className="text-[2vmin] mt-2 text-shadow truncate">{item.description}</p>
+    <div className="news-item cursor-pointer mb-4" onClick={() => onClick(item)}>
+      <h3 className="text-xl font-semibold text-shadow blue-neon">{item.title}</h3>
+      <p className="text-sm mt-2 text-shadow truncate">{item.description}</p>
     </div>
   );
 
@@ -648,28 +660,43 @@ const WeatherTimeWidget = () => {
     </div>
   );
 
+  const CurrencyTicker = () => {
+    const mainCurrencies = ['USD', 'EUR', 'GBP', 'JPY', 'CNY'].filter(cur => cur !== settings.currency);
+    return (
+      <div className="currency-ticker overflow-hidden whitespace-nowrap">
+        <div className="inline-block animate-ticker">
+          {mainCurrencies.map(cur => (
+            <span key={cur} className="mx-2">
+              {cur}: {(1 / currencies[cur]).toFixed(2)} {settings.currency}
+            </span>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className={`weather-widget relative overflow-hidden shadow-lg text-white flex flex-col md:flex-row items-stretch justify-between transition-all duration-1000 ease-in-out w-full h-full min-h-screen p-4 ${getBackgroundClass()}`}>
       <button 
         onClick={() => setIsMenuOpen(!isMenuOpen)}
         className="absolute top-4 left-4 z-20 bg-white bg-opacity-20 p-2 rounded-full hover:bg-opacity-30 transition-all duration-300"
       >
-        {isMenuOpen ? <X size="6vmin" /> : <Menu size="6vmin" />}
+        {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
 
       {isMenuOpen && (
         <div className="menu-overlay absolute inset-0 z-30 flex items-center justify-center p-4">
-          <div className="menu-content p-4 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto relative">
+          <div className="menu-content p-4 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto relative bg-white bg-opacity-90 dark:bg-gray-800 dark:bg-opacity-90">
             <button 
               onClick={() => setIsMenuOpen(false)}
               className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
             >
-              <X size="24" />
+              <X size={24} />
             </button>
 
-            <h2 className="text-xl sm:text-2xl mb-4 font-bold text-center blue-neon">{t('settings')}</h2>
+            <h2 className="text-2xl mb-4 font-bold text-center text-gray-800 dark:text-white">{t('settings')}</h2>
             <div className="mb-4">
-              <label className="block mb-2 font-semibold blue-neon">{t('language')}</label>
+              <label className="block mb-2 font-semibold text-gray-800 dark:text-white">{t('language')}</label>
               <select 
                 value={settings.language} 
                 onChange={(e) => handleSettingChange('language', e.target.value)}
@@ -681,7 +708,7 @@ const WeatherTimeWidget = () => {
               </select>
             </div>
             <div className="mb-4">
-              <label className="block mb-2 font-semibold blue-neon">{t('country')}</label>
+              <label className="block mb-2 font-semibold text-gray-800 dark:text-white">{t('country')}</label>
               <select 
                 value={settings.country} 
                 onChange={(e) => handleSettingChange('country', e.target.value)}
@@ -694,7 +721,7 @@ const WeatherTimeWidget = () => {
               </select>
             </div>
             <div className="mb-4">
-              <label className="block mb-2 font-semibold blue-neon">{t('city')}</label>
+              <label className="block mb-2 font-semibold text-gray-800 dark:text-white">{t('city')}</label>
               <select 
                 value={settings.city} 
                 onChange={(e) => handleSettingChange('city', e.target.value)}
@@ -704,6 +731,18 @@ const WeatherTimeWidget = () => {
                 <option value="">{t('autoLocation')}</option>
                 {settings.country && t('cities')[settings.country].map((city) => (
                   <option key={city} value={city}>{city}</option>
+                ))}
+              </select>
+            </div>
+            <div className="mb-4">
+              <label className="block mb-2 font-semibold text-gray-800 dark:text-white">{t('currency')}</label>
+              <select 
+                value={settings.currency} 
+                onChange={(e) => handleSettingChange('currency', e.target.value)}
+                className="w-full p-2 border rounded bg-gray-100 text-black dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {['USD', 'EUR', 'GBP', 'JPY', 'CNY', 'RUB'].map((cur) => (
+                  <option key={cur} value={cur}>{cur}</option>
                 ))}
               </select>
             </div>
@@ -781,6 +820,7 @@ const WeatherTimeWidget = () => {
           )}
         </div>
       </div>
+
 
       {selectedNews && (
         <NewsModal news={selectedNews} onClose={() => setSelectedNews(null)} />
