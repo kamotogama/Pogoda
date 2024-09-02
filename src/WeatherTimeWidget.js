@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Sun, Cloud, CloudRain, CloudSnow, CloudLightning, Moon, Thermometer, Menu, X, MapPin, ChevronRight, ChevronLeft, DollarSign } from 'lucide-react';
-
+import { Sun, Cloud, CloudRain, CloudSnow, CloudLightning, Moon, Thermometer, Menu, X, MapPin } from 'lucide-react';
+import CurrencyDisplay from './CurrencyDisplay';
 const countries = {
   US: 'United States',
   GB: 'United Kingdom',
@@ -451,11 +451,6 @@ const WeatherTimeWidget = () => {
   const [news, setNews] = useState([]);
   const [currentNewsIndex, setCurrentNewsIndex] = useState(0);
   const [selectedNews, setSelectedNews] = useState(null);
-  const [currencies, setCurrencies] = useState([
-    { from: 'USD', to: 'EUR', rate: 0 },
-    { from: 'USD', to: 'GBP', rate: 0 },
-    { from: 'USD', to: 'JPY', rate: 0 },
-  ]);
   const [settings, setSettings] = useState(() => {
     const savedSettings = localStorage.getItem('weatherSettings');
     return savedSettings ? JSON.parse(savedSettings) : {
@@ -479,7 +474,6 @@ const WeatherTimeWidget = () => {
     localStorage.setItem('weatherSettings', JSON.stringify(settings));
     fetchWeather();
     fetchNews();
-    fetchCurrencies();
   }, [settings]);
 
 
@@ -509,32 +503,18 @@ const WeatherTimeWidget = () => {
       console.error('Error fetching weather data:', error);
     }
   };
-// В fetchNews добавьте проверку, что данные получены
-const fetchNews = async () => {
-    try {
-        const response = await fetch(`http://api.mediastack.com/v1/news?access_key=7be80a12ddf4ffe4a3ab21c51fba47a0&countries=${settings.country}&languages=${settings.language}&limit=10`);
-        const data = await response.json();
-        setNews(data.data || []);
-    } catch (error) {
-        console.error('Error fetching news:', error);
-        setNews([]); // Показать сообщение об ошибке
-    }
-};
 
-// В fetchCurrencies добавьте возможность выбора валюты
-const fetchCurrencies = async () => {
+  const fetchNews = async () => {
     try {
-        const response = await fetch(`https://api.exchangerate-api.com/v4/latest/${selectedCurrency}`);
-        const data = await response.json();
-        setCurrencies([
-            { from: selectedCurrency, to: 'EUR', rate: data.rates.EUR },
-            { from: selectedCurrency, to: 'GBP', rate: data.rates.GBP },
-            { from: selectedCurrency, to: 'JPY', rate: data.rates.JPY },
-        ]);
+      const response = await fetch(`http://api.mediastack.com/v1/news?access_key=7be80a12ddf4ffe4a3ab21c51fba47a0&countries=${settings.country}&languages=${settings.language}&limit=10`);
+      const data = await response.json();
+      setNews(data.data || []);
     } catch (error) {
-        console.error('Error fetching currencies:', error);
+      console.error('Error fetching news:', error);
+      setNews([]);
     }
-};
+  };
+
   const WeatherIcon = () => {
     const iconProps = { size: '15vmin', className: `text-white weather-icon ${weather.type}-icon` };
     switch(weather.type) {
@@ -571,7 +551,6 @@ const fetchCurrencies = async () => {
     if (setting === 'country') {
       setSettings(prev => ({ ...prev, city: '' }));
     }
-    setIsMenuOpen(false);
   };
 
   const t = (key) => translations[settings.language][key];
@@ -594,18 +573,6 @@ const fetchCurrencies = async () => {
     </div>
   );
 
-  const CurrencyDisplay = () => (
-    <div className="currency-display mt-4">
-      <h3 className="text-[3vmin] font-semibold text-shadow blue-neon mb-2">Currency Exchange Rates</h3>
-      {currencies.map((currency, index) => (
-        <div key={index} className="flex items-center justify-between mb-2">
-          <span className="blue-neon">{currency.from} to {currency.to}:</span>
-          <span className="blue-neon">{currency.rate.toFixed(2)}</span>
-        </div>
-      ))}
-    </div>
-  );
-
   return (
     <div className={`weather-widget relative overflow-hidden shadow-lg text-white flex flex-col md:flex-row items-center justify-between transition-all duration-1000 ease-in-out w-full h-full min-h-screen p-4 ${getBackgroundClass()}`}>
       <button 
@@ -617,7 +584,13 @@ const fetchCurrencies = async () => {
 
       {isMenuOpen && (
         <div className="menu-overlay absolute inset-0 z-30 flex items-center justify-center p-4">
-          <div className="menu-content p-4 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+          <div className="menu-content p-4 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto relative">
+            <button 
+              onClick={() => setIsMenuOpen(false)}
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+            >
+              <X size="24" />
+            </button>
             <h2 className="text-xl sm:text-2xl mb-4 font-bold text-center blue-neon">{t('settings')}</h2>
             <div className="mb-4">
               <label className="block mb-2 font-semibold blue-neon">{t('language')}</label>
@@ -662,20 +635,24 @@ const fetchCurrencies = async () => {
         </div>
       )}
 
-      <div className="w-full md:w-1/3 z-10 text-center mt-8">
-        <div className="flex justify-center items-center space-x-4">
-          <DayNightIcon />
-          <div className="text-[8vmin] font-light text-shadow blue-neon">
-            {time.getHours().toString().padStart(2, '0')}:{time.getMinutes().toString().padStart(2, '0')}
-          </div>
-          <DayNightIcon />
-        </div>
-        <div className="text-[3vmin] mt-2 text-shadow blue-neon">
-          {time.toLocaleDateString(settings.language, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-        </div>
+      <div className="w-full md:w-1/4 order-1 md:order-1">
+        <CurrencyDisplay />
       </div>
 
-      <div className="flex flex-col items-center z-10 my-8 md:w-1/3">
+      <div className="w-full md:w-2/4 flex flex-col items-center justify-center order-2 md:order-2">
+        <div className="mb-8">
+          <div className="flex justify-center items-center space-x-4">
+            <DayNightIcon />
+            <div className="text-[8vmin] font-light text-shadow blue-neon">
+              {time.getHours().toString().padStart(2, '0')}:{time.getMinutes().toString().padStart(2, '0')}
+            </div>
+            <DayNightIcon />
+          </div>
+          <div className="text-[3vmin] mt-2 text-shadow blue-neon">
+            {time.toLocaleDateString(settings.language, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+          </div>
+        </div>
+
         <WeatherIcon />
         <div className="text-[5vmin] capitalize font-light mt-4 text-center text-shadow blue-neon">
           {weather.condition}
@@ -690,9 +667,7 @@ const fetchCurrencies = async () => {
         </div>
       </div>
 
-      <div className="w-full md:w-1/3 flex flex-col items-center">
-        <CurrencyDisplay />
-
+      <div className="w-full md:w-1/4 order-3 md:order-3">
         <div className="news-container mt-8 w-full max-w-md">
           <h2 className="text-[4vmin] font-bold mb-4 text-shadow blue-neon">{t('topNews')}</h2>
           {news.length > 0 ? (
