@@ -548,60 +548,53 @@ const WeatherTimeWidget = () => {
     localStorage.setItem('weatherSettings', JSON.stringify(settings));
     fetchData();
   }, [settings]);
-
-  const fetchWeather = async () => {
+const fetchWithRetry = async (url, options = {}, retries = 3) => {
+  for (let i = 0; i < retries; i++) {
     try {
-      const location = settings.city || settings.country || 'auto:ip';
-      const response = await fetch(
-        `https://api.weatherapi.com/v1/current.json?key=YOUR_WEATHER_API_KEY&q=${location}&aqi=no&lang=${settings.language}`
-      );
-      const data = await response.json();
-      
-      const conditionCode = data.current.condition.code;
-      let weatherType = 'sunny';
-      
-      if (conditionCode === 1000) weatherType = 'sunny';
-      else if ([1003, 1006, 1009].includes(conditionCode)) weatherType = 'cloudy';
-      else if ([1063, 1180, 1183, 1186, 1189, 1192, 1195].includes(conditionCode)) weatherType = 'rainy';
-      else if ([1066, 1114, 1210, 1213, 1216, 1219, 1222, 1225].includes(conditionCode)) weatherType = 'snowy';
-      else if ([1087, 1273, 1276, 1279, 1282].includes(conditionCode)) weatherType = 'stormy';
-      
-      setWeather({ 
-        type: weatherType, 
-        temp: Math.round(data.current.temp_c),
-        condition: data.current.condition.text
-      });
-    } catch (error) {
-      console.error('Error fetching weather data:', error);
-      throw error;
+      const response = await fetch(url, options);
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      return await response.json();
+    } catch (e) {
+      if (i === retries - 1) throw e;
     }
-  };
+  }
+};
 
-  const fetchNews = async () => {
-    try {
-      const response = await fetch(`https://newsapi.org/v2/top-headlines?country=${settings.country || 'us'}&apiKey=YOUR_NEWS_API_KEY`);
-      const data = await response.json();
-      if (data.articles && data.articles.length > 0) {
-        setNews(data.articles);
-      } else {
-        setNews([{ title: 'Новости не найдены', description: 'Попробуйте изменить настройки страны или языка.' }]);
-      }
-    } catch (error) {
-      console.error('Error fetching news:', error);
-      throw error;
-    }
-  };
+const fetchWeather = async () => {
+  const location = settings.city || settings.country || 'auto:ip';
+  const data = await fetchWithRetry(
+    `https://api.weatherapi.com/v1/current.json?key=YOUR_WEATHER_API_KEY&q=${location}&aqi=no&lang=${settings.language}`
+  );
+  
+  const conditionCode = data.current.condition.code;
+  let weatherType = 'sunny';
+  
+  if (conditionCode === 1000) weatherType = 'sunny';
+  else if ([1003, 1006, 1009].includes(conditionCode)) weatherType = 'cloudy';
+  else if ([1063, 1180, 1183, 1186, 1189, 1192, 1195].includes(conditionCode)) weatherType = 'rainy';
+  else if ([1066, 1114, 1210, 1213, 1216, 1219, 1222, 1225].includes(conditionCode)) weatherType = 'snowy';
+  else if ([1087, 1273, 1276, 1279, 1282].includes(conditionCode)) weatherType = 'stormy';
+  
+  setWeather({ 
+    type: weatherType, 
+    temp: Math.round(data.current.temp_c),
+    condition: data.current.condition.text
+  });
+};
 
-  const fetchCurrencies = async () => {
-    try {
-      const response = await fetch(`https://api.exchangerate-api.com/v4/latest/${settings.currency}`);
-      const data = await response.json();
-      setCurrencies(data.rates);
-    } catch (error) {
-      console.error('Error fetching currency data:', error);
-      throw error;
-    }
-  };
+const fetchNews = async () => {
+  const data = await fetchWithRetry(`https://gnews.io/api/v4/top-headlines?country=${settings.country || 'us'}&lang=${settings.language}&token=YOUR_GNEWS_API_KEY`);
+  if (data.articles && data.articles.length > 0) {
+    setNews(data.articles);
+  } else {
+    setNews([{ title: 'Новости не найдены', description: 'Попробуйте изменить настройки страны или языка.' }]);
+  }
+};
+
+const fetchCurrencies = async () => {
+  const data = await fetchWithRetry(`https://api.exchangerate-api.com/v4/latest/${settings.currency}`);
+  setCurrencies(data.rates);
+};
 
   const WeatherIcon = () => {
     const iconProps = { size: 64, className: `text-white weather-icon ${weather.type}-icon` };
