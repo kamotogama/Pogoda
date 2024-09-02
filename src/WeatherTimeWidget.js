@@ -518,6 +518,8 @@ const WeatherTimeWidget = () => {
     };
   });
   const [currencies, setCurrencies] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (window.Telegram && window.Telegram.WebApp) {
@@ -530,17 +532,28 @@ const WeatherTimeWidget = () => {
   }, []);
 
   useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        await Promise.all([fetchWeather(), fetchNews(), fetchCurrencies()]);
+      } catch (err) {
+        console.error('Error fetching data:', err);
+        setError('Failed to load data. Please try again later.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     localStorage.setItem('weatherSettings', JSON.stringify(settings));
-    fetchWeather();
-    fetchNews();
-    fetchCurrencies();
+    fetchData();
   }, [settings]);
 
   const fetchWeather = async () => {
     try {
       const location = settings.city || settings.country || 'auto:ip';
       const response = await fetch(
-        `https://api.weatherapi.com/v1/current.json?key=4fe8d41b43ea4f1fbe2103447242608&q=${location}&aqi=no&lang=${settings.language}`
+        `https://api.weatherapi.com/v1/current.json?key=YOUR_WEATHER_API_KEY&q=${location}&aqi=no&lang=${settings.language}`
       );
       const data = await response.json();
       
@@ -560,6 +573,7 @@ const WeatherTimeWidget = () => {
       });
     } catch (error) {
       console.error('Error fetching weather data:', error);
+      throw error;
     }
   };
 
@@ -574,7 +588,7 @@ const WeatherTimeWidget = () => {
       }
     } catch (error) {
       console.error('Error fetching news:', error);
-      setNews([{ title: 'Ошибка загрузки новостей', description: 'Пожалуйста, попробуйте позже.' }]);
+      throw error;
     }
   };
 
@@ -585,6 +599,7 @@ const WeatherTimeWidget = () => {
       setCurrencies(data.rates);
     } catch (error) {
       console.error('Error fetching currency data:', error);
+      throw error;
     }
   };
 
@@ -674,6 +689,22 @@ const WeatherTimeWidget = () => {
       </div>
     );
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-100 dark:bg-gray-900">
+        <div className="text-2xl font-bold text-gray-800 dark:text-white">Loading...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-100 dark:bg-gray-900">
+        <div className="text-2xl font-bold text-red-600 dark:text-red-400">{error}</div>
+      </div>
+    );
+  }
 
   return (
     <div className={`weather-widget relative overflow-hidden shadow-lg text-white flex flex-col md:flex-row items-stretch justify-between transition-all duration-1000 ease-in-out w-full h-full min-h-screen p-4 ${getBackgroundClass()}`}>
@@ -822,6 +853,7 @@ const WeatherTimeWidget = () => {
       </div>
 
 
+      
       {selectedNews && (
         <NewsModal news={selectedNews} onClose={() => setSelectedNews(null)} />
       )}
