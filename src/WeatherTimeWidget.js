@@ -711,11 +711,29 @@ const WeatherTimeWidget = () => {
         </div>
       )}
 
-      <div className="w-full md:w-1/4 order-1 md:order-1 flex items-center justify-center p-4">
-        <CurrencyDisplay />
+      <div className="w-full md:w-1/4 order-1 md:order-1 flex flex-col items-center justify-start p-4">
+        <div className="news-container w-full max-w-md bg-black bg-opacity-30 backdrop-blur-md p-4 rounded-lg overflow-y-auto" style={{maxHeight: '80vh'}}>
+          <h2 className="text-2xl font-bold mb-4 text-shadow blue-neon">{t('topNews')}</h2>
+          {news.length > 0 ? (
+            <>
+              <NewsItem item={news[currentNewsIndex]} onClick={setSelectedNews} />
+              <div className="flex justify-between mt-4">
+                <button onClick={() => setCurrentNewsIndex((prev) => (prev === 0 ? news.length - 1 : prev - 1))}>
+                  <ChevronLeft size={24} className="blue-neon" />
+                </button>
+                <button onClick={() => setCurrentNewsIndex((prev) => (prev === news.length - 1 ? 0 : prev + 1))}>
+                  <ChevronRight size={24} className="blue-neon" />
+                </button>
+              </div>
+            </>
+          ) : (
+            <p className="text-xl text-shadow blue-neon">Загрузка новостей...</p>
+          )}
+        </div>
       </div>
 
       <div className="w-full md:w-2/4 flex flex-col items-center justify-center order-2 md:order-2">
+        <CurrencyTicker />
         <div className="mb-8">
           <div className="flex justify-center items-center space-x-4">
             <DayNightIcon />
