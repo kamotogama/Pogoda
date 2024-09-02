@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Sun, Cloud, CloudRain, CloudSnow, CloudLightning, Moon, Thermometer, Menu, X, MapPin } from 'lucide-react';
-import CurrencyDisplay from './CurrencyDisplay';
+import { Sun, Cloud, CloudRain, CloudSnow, CloudLightning, Moon, Thermometer, Menu, X, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
+
 const countries = {
   US: 'United States',
   GB: 'United Kingdom',
@@ -442,7 +442,44 @@ nl: {
 
 };
 
+// Компонент CurrencyDisplay
+const CurrencyDisplay = () => {
+  const [currencies, setCurrencies] = useState({
+    USD: 0,
+    EUR: 0,
+    GBP: 0
+  });
 
+  useEffect(() => {
+    const fetchCurrencies = async () => {
+      try {
+        const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+        const data = await response.json();
+        setCurrencies({
+          USD: 1,
+          EUR: data.rates.EUR,
+          GBP: data.rates.GBP
+        });
+      } catch (error) {
+        console.error('Error fetching currency data:', error);
+      }
+    };
+
+    fetchCurrencies();
+  }, []);
+
+  return (
+    <div className="currency-display text-white p-4 rounded-lg">
+      <h2 className="text-[4vmin] font-bold mb-4 text-shadow blue-neon">Курсы валют</h2>
+      {Object.entries(currencies).map(([currency, rate]) => (
+        <div key={currency} className="currency-pair">
+          <span className="text-[3vmin] blue-neon">{currency}</span>
+          <span className="text-[3vmin] blue-neon">{rate.toFixed(2)}</span>
+        </div>
+      ))}
+    </div>
+  );
+};
 
 const WeatherTimeWidget = () => {
   const [time, setTime] = useState(new Date());
@@ -572,9 +609,8 @@ const WeatherTimeWidget = () => {
       </div>
     </div>
   );
-
   return (
-    <div className={`weather-widget relative overflow-hidden shadow-lg text-white flex flex-col md:flex-row items-center justify-between transition-all duration-1000 ease-in-out w-full h-full min-h-screen p-4 ${getBackgroundClass()}`}>
+    <div className={`weather-widget relative overflow-hidden shadow-lg text-white flex flex-col md:flex-row items-stretch justify-between transition-all duration-1000 ease-in-out w-full h-full min-h-screen p-4 ${getBackgroundClass()}`}>
       <button 
         onClick={() => setIsMenuOpen(!isMenuOpen)}
         className="absolute top-4 left-4 z-20 bg-white bg-opacity-20 p-2 rounded-full hover:bg-opacity-30 transition-all duration-300"
@@ -635,11 +671,11 @@ const WeatherTimeWidget = () => {
         </div>
       )}
 
-      <div className="w-full md:w-1/4 order-1 md:order-1">
+      <div className="w-full md:w-1/4 order-1 md:order-1 flex items-center justify-center">
         <CurrencyDisplay />
       </div>
 
-      <div className="w-full md:w-2/4 flex flex-col items-center justify-center order-2 md:order-2">
+      <div className="w-full md:w-2/4 flex flex-col items-center justify-start order-2 md:order-2 mt-8">
         <div className="mb-8">
           <div className="flex justify-center items-center space-x-4">
             <DayNightIcon />
@@ -648,7 +684,7 @@ const WeatherTimeWidget = () => {
             </div>
             <DayNightIcon />
           </div>
-          <div className="text-[3vmin] mt-2 text-shadow blue-neon">
+          <div className="text-[3vmin] mt-2 text-shadow blue-neon text-center">
             {time.toLocaleDateString(settings.language, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
           </div>
         </div>
@@ -667,7 +703,7 @@ const WeatherTimeWidget = () => {
         </div>
       </div>
 
-      <div className="w-full md:w-1/4 order-3 md:order-3">
+      <div className="w-full md:w-1/4 order-3 md:order-3 flex items-center justify-center">
         <div className="news-container mt-8 w-full max-w-md">
           <h2 className="text-[4vmin] font-bold mb-4 text-shadow blue-neon">{t('topNews')}</h2>
           {news.length > 0 ? (
@@ -683,7 +719,7 @@ const WeatherTimeWidget = () => {
               </div>
             </>
           ) : (
-            <p className="text-[3vmin] text-shadow blue-neon">{t('noNews')}</p>
+            <p className="text-[3vmin] text-shadow blue-neon">Загрузка новостей...</p>
           )}
         </div>
       </div>
