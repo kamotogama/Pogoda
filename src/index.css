@@ -204,6 +204,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  padding: 1rem;
 }
 
 /* Form styles */
@@ -226,32 +227,120 @@ select {
   .weather-widget {
     padding: 10px;
   }
-  .text-[8vmin] { font-size: 2rem; }
-  .text-[5vmin] { font-size: 1.5rem; }
-  .text-[3vmin] { font-size: 1rem; }
+  .text-6xl { font-size: 2rem; }
+  .text-4xl { font-size: 1.5rem; }
+  .text-2xl { font-size: 1.25rem; }
+  .text-xl { font-size: 1rem; }
 }
 
 @media (min-width: 641px) and (max-width: 1024px) {
   .weather-widget {
     padding: 20px;
   }
-  .text-[8vmin] { font-size: 3rem; }
-  .text-[5vmin] { font-size: 2rem; }
-  .text-[3vmin] { font-size: 1.25rem; }
+  .text-6xl { font-size: 3rem; }
+  .text-4xl { font-size: 2rem; }
+  .text-2xl { font-size: 1.5rem; }
+  .text-xl { font-size: 1.25rem; }
 }
 
 @media (min-width: 1025px) {
   .weather-widget {
     padding: 30px;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: space-between;
   }
-  .text-[8vmin] { font-size: 4rem; }
-  .text-[5vmin] { font-size: 2.5rem; }
-  .text-[3vmin] { font-size: 1.5rem; }
-  
-  .news-container, .currency-display {
-    width: 30%;
+  .text-6xl { font-size: 4rem; }
+  .text-4xl { font-size: 2.5rem; }
+  .text-2xl { font-size: 1.75rem; }
+  .text-xl { font-size: 1.5rem; }
+}
+
+/* Additional styles for better readability */
+.weather-icon {
+  width: 64px;
+  height: 64px;
+}
+
+.blue-neon {
+  color: #fff;
+}
+
+.menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.news-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(255, 255, 255, 0.95);
+  padding: 2rem;
+  border-radius: 10px;
+  max-width: 90%;
+  max-height: 90%;
+  overflow-y: auto;
+  z-index: 1001;
+}
+
+.news-modal h2 {
+  margin-bottom: 1rem;
+}
+
+.news-modal p {
+  margin-bottom: 1rem;
+}
+
+.news-modal a {
+  color: #228DFF;
+  text-decoration: none;
+}
+
+.news-modal a:hover {
+  text-decoration: underline;
+}
+
+.news-modal button {
+  background-color: #228DFF;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.news-modal button:hover {
+  background-color: #1a6dbf;
+}
+
+/* Improve accessibility */
+button:focus,
+select:focus {
+  outline: 2px solid #228DFF;
+  outline-offset: 2px;
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #1a202c;
+    color: #fff;
+  }
+
+  .menu-content {
+    background-color: rgba(26, 32, 44, 0.9);
+    color: #fff;
+  }
+
+  .news-modal {
+    background-color: rgba(26, 32, 44, 0.95);
+    color: #fff;
   }
 }
