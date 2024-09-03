@@ -474,23 +474,23 @@ const CurrencyDisplay = () => {
   }, [baseCurrency]);
 
   return (
-    <div className="currency-display text-white p-4 rounded-lg bg-black bg-opacity-30 backdrop-blur-md w-full max-w-xs">
-      <h2 className="text-2xl font-bold mb-4 text-shadow blue-neon">Курсы валют</h2>
+    <div className="currency-display text-white p-4 rounded-lg bg-black bg-opacity-30 backdrop-blur-md">
+      <h2 className="text-[3vmin] font-bold mb-4 text-shadow blue-neon">Курсы валют</h2>
       <select 
         value={baseCurrency} 
         onChange={(e) => setBaseCurrency(e.target.value)}
-        className="mb-4 bg-transparent border border-white text-white p-2 rounded w-full"
+        className="mb-4 bg-transparent border border-white text-white p-2 rounded"
       >
         {Object.keys(currencies).map(currency => (
           <option key={currency} value={currency}>{currency}</option>
         ))}
       </select>
-      <div className="grid grid-cols-1 gap-2">
+      <div className="grid grid-cols-2 gap-2">
         {Object.entries(currencies).map(([currency, rate]) => (
           currency !== baseCurrency && (
-            <div key={currency} className="currency-pair flex justify-between items-center bg-white bg-opacity-10 p-2 rounded">
-              <span className="text-xl blue-neon">{currency}</span>
-              <span className="text-xl blue-neon">{(1 / rate).toFixed(4)}</span>
+            <div key={currency} className="currency-pair flex justify-between">
+              <span className="text-[2.5vmin] blue-neon">{currency}</span>
+              <span className="text-[2.5vmin] blue-neon">{(1 / rate).toFixed(4)}</span>
             </div>
           )
         ))}
@@ -498,8 +498,6 @@ const CurrencyDisplay = () => {
     </div>
   );
 };
-
-
 
 const WeatherTimeWidget = () => {
   const [time, setTime] = useState(new Date());
@@ -514,12 +512,8 @@ const WeatherTimeWidget = () => {
       language: 'en',
       country: '',
       city: '',
-      currency: 'USD'
     };
   });
-  const [currencies, setCurrencies] = useState({});
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (window.Telegram && window.Telegram.WebApp) {
@@ -532,82 +526,57 @@ const WeatherTimeWidget = () => {
   }, []);
 
   useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        await Promise.all([fetchWeather(), fetchNews(), fetchCurrencies()]);
-      } catch (err) {
-        console.error('Error fetching data:', err);
-        setError('Failed to load data. Please try again later.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     localStorage.setItem('weatherSettings', JSON.stringify(settings));
-    fetchData();
+    fetchWeather();
+    fetchNews();
   }, [settings]);
-const fetchWithRetry = async (url, options = {}, retries = 3) => {
-  for (let i = 0; i < retries; i++) {
+
+  const fetchWeather = async () => {
     try {
-      const response = await fetch(url, options);
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      return await response.json();
-    } catch (e) {
-      if (i === retries - 1) throw e;
+      const location = settings.city || settings.country || 'auto:ip';
+      const response = await fetch(
+        `https://api.weatherapi.com/v1/current.json?key=4fe8d41b43ea4f1fbe2103447242608&q=${location}&aqi=no&lang=${settings.language}`
+      );
+      const data = await response.json();
+      
+      const conditionCode = data.current.condition.code;
+      let weatherType = 'sunny';
+      
+      if (conditionCode === 1000) weatherType = 'sunny';
+      else if ([1003, 1006, 1009].includes(conditionCode)) weatherType = 'cloudy';
+      else if ([1063, 1180, 1183, 1186, 1189, 1192, 1195].includes(conditionCode)) weatherType = 'rainy';
+      else if ([1066, 1114, 1210, 1213, 1216, 1219, 1222, 1225].includes(conditionCode)) weatherType = 'snowy';
+      else if ([1087, 1273, 1276, 1279, 1282].includes(conditionCode)) weatherType = 'stormy';
+      
+      setWeather({ 
+        type: weatherType, 
+        temp: Math.round(data.current.temp_c),
+        condition: data.current.condition.text
+      });
+    } catch (error) {
+      console.error('Error fetching weather data:', error);
     }
-  }
-};
+  };
 
-const fetchWeather = async () => {
-  const location = settings.city || settings.country || 'auto:ip';
-  const data = await fetchWithRetry(
-    `https://api.weatherapi.com/v1/current.json?key=4fe8d41b43ea4f1fbe2103447242608&q=${location}&aqi=no&lang=${settings.language}`
-  );
-  
-  const conditionCode = data.current.condition.code;
-  let weatherType = 'sunny';
-  
-  if (conditionCode === 1000) weatherType = 'sunny';
-  else if ([1003, 1006, 1009].includes(conditionCode)) weatherType = 'cloudy';
-  else if ([1063, 1180, 1183, 1186, 1189, 1192, 1195].includes(conditionCode)) weatherType = 'rainy';
-  else if ([1066, 1114, 1210, 1213, 1216, 1219, 1222, 1225].includes(conditionCode)) weatherType = 'snowy';
-  else if ([1087, 1273, 1276, 1279, 1282].includes(conditionCode)) weatherType = 'stormy';
-  
-  setWeather({ 
-    type: weatherType, 
-    temp: Math.round(data.current.temp_c),
-    condition: data.current.condition.text
-  });
-};
-
-const fetchNews = async () => {
-  try {
-    const country = settings.country || 'us';
-    const language = settings.language || 'en';
-    const url = `http://api.mediastack.com/v1/news?access_key=7be80a12ddf4ffe4a3ab21c51fba47a0&countries=${country}&languages=${language}&limit=10`;
-    
-    const data = await fetchWithRetry(url);
-    
-    if (data.data && data.data.length > 0) {
-      setNews(data.data);
-    } else {
-      setNews([{ title: 'Новости не найдены', description: 'Попробуйте изменить настройки страны или языка.' }]);
+  const fetchNews = async () => {
+    try {
+      const country = settings.country || 'us';
+      const language = settings.language || 'en';
+      const response = await fetch(`http://api.mediastack.com/v1/news?access_key=7be80a12ddf4ffe4a3ab21c51fba47a0&countries=${country}&languages=${language}&limit=10`);
+      const data = await response.json();
+      if (data.data && data.data.length > 0) {
+        setNews(data.data);
+      } else {
+        setNews([{ title: 'Новости не найдены', description: 'Попробуйте изменить настройки страны или языка.' }]);
+      }
+    } catch (error) {
+      console.error('Error fetching news:', error);
+      setNews([{ title: 'Ошибка загрузки новостей', description: 'Пожалуйста, попробуйте позже.' }]);
     }
-  } catch (error) {
-    console.error('Error fetching news:', error);
-    throw new Error('News data unavailable');
-  }
-};
-
-const fetchCurrencies = async () => {
-  const data = await fetchWithRetry(`https://api.exchangerate-api.com/v4/latest/${settings.currency}`);
-  setCurrencies(data.rates);
-};
+  };
 
   const WeatherIcon = () => {
-    const iconProps = { size: 64, className: `text-white weather-icon ${weather.type}-icon` };
+    const iconProps = { size: '15vmin', className: `text-white weather-icon ${weather.type}-icon` };
     switch(weather.type) {
       case 'sunny': return <Sun {...iconProps} />;
       case 'cloudy': return <Cloud {...iconProps} />;
@@ -620,7 +589,7 @@ const fetchCurrencies = async () => {
 
   const DayNightIcon = () => {
     const hour = time.getHours();
-    const iconProps = { size: 24, className: "text-white opacity-80" };
+    const iconProps = { size: '4vmin', className: "text-white opacity-80" };
     return (hour >= 6 && hour < 18) ? <Sun {...iconProps} /> : <Moon {...iconProps} />;
   };
 
@@ -661,81 +630,44 @@ const fetchCurrencies = async () => {
   const t = (key) => translations[settings.language][key];
 
   const NewsItem = ({ item, onClick }) => (
-  <div className="news-item cursor-pointer mb-4" onClick={() => onClick(item)}>
-    <h3 className="text-xl font-semibold text-shadow blue-neon">{item.title}</h3>
-    <p className="text-sm mt-2 text-shadow truncate">{item.description}</p>
-    <p className="text-xs mt-1 text-shadow">{item.source} - {new Date(item.published_at).toLocaleDateString()}</p>
-  </div>
-);
+    <div className="news-item cursor-pointer" onClick={() => onClick(item)}>
+      <h3 className="text-[2.5vmin] font-semibold text-shadow blue-neon">{item.title}</h3>
+      <p className="text-[2vmin] mt-2 text-shadow truncate">{item.description}</p>
+    </div>
+  );
 
   const NewsModal = ({ news, onClose }) => (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-      <h2 className="text-2xl font-bold mb-4 blue-neon">{news.title}</h2>
-      <p className="mb-4">{news.description}</p>
-      <p className="text-sm mb-2">Source: {news.source}</p>
-      <p className="text-sm mb-4">Published: {new Date(news.published_at).toLocaleString()}</p>
-      <a href={news.url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline blue-neon">Read more</a>
-      <button onClick={onClose} className="mt-4 bg-blue-500 text-white px-4 py-2 rounded blue-neon">Close</button>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <h2 className="text-2xl font-bold mb-4 blue-neon">{news.title}</h2>
+        <p className="mb-4">{news.description}</p>
+        <a href={news.url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline blue-neon">Read more</a>
+        <button onClick={onClose} className="mt-4 bg-blue-500 text-white px-4 py-2 rounded blue-neon">Close</button>
+      </div>
     </div>
-  </div>
-);
-
-  const CurrencyTicker = () => {
-    const mainCurrencies = ['USD', 'EUR', 'GBP', 'JPY', 'CNY'].filter(cur => cur !== settings.currency);
-    return (
-      <div className="currency-ticker overflow-hidden whitespace-nowrap">
-        <div className="inline-block animate-ticker">
-          {mainCurrencies.map(cur => (
-            <span key={cur} className="mx-2">
-              {cur}: {(1 / currencies[cur]).toFixed(2)} {settings.currency}
-            </span>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gray-100 dark:bg-gray-900">
-        <div className="text-2xl font-bold text-gray-800 dark:text-white">Loading...</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gray-100 dark:bg-gray-900">
-        <div className="text-2xl font-bold text-red-600 dark:text-red-400">{error}</div>
-      </div>
-    );
-  }
-
-  
-  
+  );
   return (
-    <div className={`weather-widget ${getBackgroundClass()}`}>
+    <div className={`weather-widget relative overflow-hidden shadow-lg text-white flex flex-col md:flex-row items-stretch justify-between transition-all duration-1000 ease-in-out w-full h-full min-h-screen p-4 ${getBackgroundClass()}`}>
       <button 
         onClick={() => setIsMenuOpen(!isMenuOpen)}
         className="absolute top-4 left-4 z-20 bg-white bg-opacity-20 p-2 rounded-full hover:bg-opacity-30 transition-all duration-300"
       >
-        {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        {isMenuOpen ? <X size="6vmin" /> : <Menu size="6vmin" />}
       </button>
 
       {isMenuOpen && (
         <div className="menu-overlay absolute inset-0 z-30 flex items-center justify-center p-4">
-          <div className="menu-content p-4 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto relative bg-white bg-opacity-90 dark:bg-gray-800 dark:bg-opacity-90">
+          <div className="menu-content p-4 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto relative">
             <button 
               onClick={() => setIsMenuOpen(false)}
               className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
             >
-              <X size={24} />
+              <X size="24" />
             </button>
 
-            <h2 className="text-2xl mb-4 font-bold text-center text-gray-800 dark:text-white">{t('settings')}</h2>
+            <h2 className="text-xl sm:text-2xl mb-4 font-bold text-center blue-neon">{t('settings')}</h2>
             <div className="mb-4">
-              <label className="block mb-2 font-semibold text-gray-800 dark:text-white">{t('language')}</label>
+              <label className="block mb-2 font-semibold blue-neon">{t('language')}</label>
               <select 
                 value={settings.language} 
                 onChange={(e) => handleSettingChange('language', e.target.value)}
@@ -747,7 +679,7 @@ const fetchCurrencies = async () => {
               </select>
             </div>
             <div className="mb-4">
-              <label className="block mb-2 font-semibold text-gray-800 dark:text-white">{t('country')}</label>
+              <label className="block mb-2 font-semibold blue-neon">{t('country')}</label>
               <select 
                 value={settings.country} 
                 onChange={(e) => handleSettingChange('country', e.target.value)}
@@ -760,7 +692,7 @@ const fetchCurrencies = async () => {
               </select>
             </div>
             <div className="mb-4">
-              <label className="block mb-2 font-semibold text-gray-800 dark:text-white">{t('city')}</label>
+              <label className="block mb-2 font-semibold blue-neon">{t('city')}</label>
               <select 
                 value={settings.city} 
                 onChange={(e) => handleSettingChange('city', e.target.value)}
@@ -773,71 +705,61 @@ const fetchCurrencies = async () => {
                 ))}
               </select>
             </div>
-            <div className="mb-4">
-              <label className="block mb-2 font-semibold text-gray-800 dark:text-white">{t('currency')}</label>
-              <select 
-                value={settings.currency} 
-                onChange={(e) => handleSettingChange('currency', e.target.value)}
-                className="w-full p-2 border rounded bg-gray-100 text-black dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                {['USD', 'EUR', 'GBP', 'JPY', 'CNY', 'RUB'].map((cur) => (
-                  <option key={cur} value={cur}>{cur}</option>
-                ))}
-              </select>
-            </div>
           </div>
         </div>
       )}
 
-      <div className="news-container">
-        <h2 className="text-2xl font-bold mb-4 text-shadow blue-neon">{t('topNews')}</h2>
-        {news.length > 0 ? (
-          <>
-            <NewsItem item={news[currentNewsIndex]} onClick={setSelectedNews} />
-            <div className="flex justify-between mt-4">
-              <button onClick={() => setCurrentNewsIndex((prev) => (prev === 0 ? news.length - 1 : prev - 1))}>
-                <ChevronLeft size={24} className="blue-neon" />
-              </button>
-              <button onClick={() => setCurrentNewsIndex((prev) => (prev === news.length - 1 ? 0 : prev + 1))}>
-                <ChevronRight size={24} className="blue-neon" />
-              </button>
-            </div>
-          </>
-        ) : (
-          <p className="text-xl text-shadow blue-neon">Загрузка новостей...</p>
-        )}
+      <div className="w-full md:w-1/4 order-1 md:order-1 flex items-center justify-center">
+        <CurrencyDisplay />
       </div>
 
-      <div className="weather-time-container">
-        <CurrencyTicker />
+      <div className="w-full md:w-2/4 flex flex-col items-center justify-start order-2 md:order-2 mt-8">
         <div className="mb-8">
           <div className="flex justify-center items-center space-x-4">
             <DayNightIcon />
-            <div className="text-6xl md:text-8xl font-light text-shadow blue-neon">
+            <div className="text-[8vmin] font-light text-shadow blue-neon">
               {time.getHours().toString().padStart(2, '0')}:{time.getMinutes().toString().padStart(2, '0')}
             </div>
             <DayNightIcon />
           </div>
-          <div className="text-xl md:text-2xl mt-2 text-shadow blue-neon text-center">
+          <div className="text-[3vmin] mt-2 text-shadow blue-neon text-center">
             {time.toLocaleDateString(settings.language, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
           </div>
         </div>
 
         <WeatherIcon />
-        <div className="text-3xl md:text-4xl capitalize font-light mt-4 text-center text-shadow blue-neon">
+        <div className="text-[5vmin] capitalize font-light mt-4 text-center text-shadow blue-neon">
           {weather.condition}
         </div>
         <div className="flex items-center mt-2">
-          <Thermometer className="text-white mr-2 blue-neon" size={36} />
-          <span className="text-4xl md:text-5xl font-light text-shadow blue-neon">{weather.temp}°C</span>
+          <Thermometer className="text-white mr-2 blue-neon" size="7vmin" />
+          <span className="text-[7vmin] font-light text-shadow blue-neon">{weather.temp}°C</span>
         </div>
-        <div className="mt-4 flex items-center text-xl md:text-2xl text-shadow blue-neon">
-          <MapPin size={24} className="mr-2" />
+        <div className="mt-4 flex items-center text-[3.5vmin] text-shadow blue-neon">
+          <MapPin size="5vmin" className="mr-2" />
           <span>{settings.city || settings.country || t('autoLocation')}</span>
         </div>
       </div>
-
-      <CurrencyDisplay />
+      <div className="w-full md:w-1/4 order-3 md:order-3 flex items-center justify-center">
+        <div className="news-container mt-8 w-full max-w-md bg-black bg-opacity-30 backdrop-blur-md p-4 rounded-lg">
+          <h2 className="text-[3vmin] font-bold mb-4 text-shadow blue-neon">{t('topNews')}</h2>
+          {news.length > 0 ? (
+            <>
+              <NewsItem item={news[currentNewsIndex]} onClick={setSelectedNews} />
+              <div className="flex justify-between mt-4">
+                <button onClick={() => setCurrentNewsIndex((prev) => (prev === 0 ? news.length - 1 : prev - 1))}>
+                  <ChevronLeft size="6vmin" className="blue-neon" />
+                </button>
+                <button onClick={() => setCurrentNewsIndex((prev) => (prev === news.length - 1 ? 0 : prev + 1))}>
+                  <ChevronRight size="6vmin" className="blue-neon" />
+                </button>
+              </div>
+            </>
+          ) : (
+            <p className="text-[2.5vmin] text-shadow blue-neon">Загрузка новостей...</p>
+          )}
+        </div>
+      </div>
 
       {selectedNews && (
         <NewsModal news={selectedNews} onClose={() => setSelectedNews(null)} />
