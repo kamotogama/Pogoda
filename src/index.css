@@ -2,6 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
+
 :root {
   --app-height: 100vh;
 }
@@ -25,19 +26,9 @@ body {
 }
 
 .weather-widget {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
   min-height: var(--app-height);
   transition: background-color 1s ease;
   padding: 1rem;
-}
-
-@media (min-width: 768px) {
-  .weather-widget {
-    grid-template-columns: 1fr 2fr 1fr;
-    padding: 2rem;
-  }
 }
 
 /* Weather backgrounds */
@@ -51,26 +42,6 @@ body {
 /* Text styles */
 .text-shadow {
   text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-}
-
-.text-outline {
-  text-shadow: 
-    -1px -1px 0 #000,
-    1px -1px 0 #000,
-    -1px 1px 0 #000,
-    1px 1px 0 #000;
-}
-
-.blue-neon {
-  text-shadow: 
-    0 0 5px #fff,
-    0 0 10px #fff,
-    0 0 15px #fff,
-    0 0 20px #228DFF,
-    0 0 35px #228DFF,
-    0 0 40px #228DFF,
-    0 0 50px #228DFF,
-    0 0 75px #228DFF;
 }
 
 /* Weather icon animations */
@@ -129,68 +100,49 @@ body {
   border-radius: 10px;
   padding: 20px;
 }
-
-.menu-item {
-  background-color: rgba(255, 255, 255, 0.8);
-  color: #333;
-  transition: background-color 0.3s ease;
-  padding: 10px;
-  margin-bottom: 5px;
-  border-radius: 5px;
-}
-
-.menu-item:hover {
-  background-color: rgba(200, 200, 200, 0.8);
-}
-
-/* News styles */
 .news-container {
-  background-color: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(5px);
-  border-radius: 10px;
-  padding: 15px;
-  overflow-y: auto;
-  max-height: 80vh;
+  width: 100%;
+  max-width: 640px;
+  margin-top: 1rem;
 }
+
+
 
 .news-item {
   background-color: rgba(255, 255, 255, 0.1);
   padding: 10px;
   border-radius: 5px;
   margin-bottom: 10px;
+  transition: all 0.3s ease;
 }
 
-/* Currency styles */
-.currency-display {
-  background-color: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(5px);
-  border-radius: 10px;
-  padding: 15px;
-  overflow-y: auto;
-  max-height: 80vh;
-}
-
-.currency-pair {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 10px;
-  background-color: rgba(255, 255, 255, 0.1);
-  padding: 10px;
-  border-radius: 5px;
+.news-item:hover {
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
 .currency-ticker {
   width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
   overflow: hidden;
-  white-space: nowrap;
   background-color: rgba(0, 0, 0, 0.5);
   padding: 0.5rem;
   border-radius: 5px;
 }
 
-.animate-ticker {
-  display: inline-block;
-  animation: ticker 20s linear infinite;
+
+.news-modal {
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+}
+
+.news-modal-content {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  max-width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 @keyframes ticker {
@@ -198,35 +150,15 @@ body {
   100% { transform: translate3d(-100%, 0, 0); }
 }
 
-/* Weather and time container */
-.weather-time-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-}
-
-/* Form styles */
-select {
-  color: black;
-  background-color: white;
-  padding: 5px;
-  border-radius: 5px;
-  border: none;
-  margin-right: 5px;
-}
-
-.dark select {
-  color: white;
-  background-color: #4a5568;
+.animate-ticker {
+  display: inline-block;
+  white-space: nowrap;
+  padding-right: 100%;
+  animation: ticker 30s linear infinite;
 }
 
 /* Responsive design */
 @media (max-width: 640px) {
-  .weather-widget {
-    padding: 10px;
-  }
   .text-6xl { font-size: 2rem; }
   .text-4xl { font-size: 1.5rem; }
   .text-2xl { font-size: 1.25rem; }
@@ -234,9 +166,6 @@ select {
 }
 
 @media (min-width: 641px) and (max-width: 1024px) {
-  .weather-widget {
-    padding: 20px;
-  }
   .text-6xl { font-size: 3rem; }
   .text-4xl { font-size: 2rem; }
   .text-2xl { font-size: 1.5rem; }
@@ -244,81 +173,27 @@ select {
 }
 
 @media (min-width: 1025px) {
-  .weather-widget {
-    padding: 30px;
-  }
   .text-6xl { font-size: 4rem; }
   .text-4xl { font-size: 2.5rem; }
   .text-2xl { font-size: 1.75rem; }
   .text-xl { font-size: 1.5rem; }
 }
 
-/* Additional styles for better readability */
-.weather-icon {
-  width: 64px;
-  height: 64px;
+@media (max-width: 640px) {
+  .weather-widget {
+    padding: 0.5rem;
+  }
+
+  .currency-ticker, .news-container {
+    max-width: 100%;
+  }
+
+  .text-6xl { font-size: 2rem; }
+  .text-4xl { font-size: 1.5rem; }
+  .text-2xl { font-size: 1.25rem; }
+  .text-xl { font-size: 1rem; }
 }
 
-.blue-neon {
-  color: #fff;
-}
-
-.menu-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.news-modal {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: rgba(255, 255, 255, 0.95);
-  padding: 2rem;
-  border-radius: 10px;
-  max-width: 90%;
-  max-height: 90%;
-  overflow-y: auto;
-  z-index: 1001;
-}
-
-.news-modal h2 {
-  margin-bottom: 1rem;
-}
-
-.news-modal p {
-  margin-bottom: 1rem;
-}
-
-.news-modal a {
-  color: #228DFF;
-  text-decoration: none;
-}
-
-.news-modal a:hover {
-  text-decoration: underline;
-}
-
-.news-modal button {
-  background-color: #228DFF;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.news-modal button:hover {
-  background-color: #1a6dbf;
-}
 
 /* Improve accessibility */
 button:focus,
@@ -336,11 +211,6 @@ select:focus {
 
   .menu-content {
     background-color: rgba(26, 32, 44, 0.9);
-    color: #fff;
-  }
-
-  .news-modal {
-    background-color: rgba(26, 32, 44, 0.95);
     color: #fff;
   }
 }
